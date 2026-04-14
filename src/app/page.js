@@ -1,13 +1,8 @@
-import React from 'react';
-
-import Header from '../components/Header/Header';
-import ChatWindow from '../components/ChatWindow/ChatWindow';
+import LandingPage from "@/components/LandingPage/LandingPage";
 
 export default function Home() {
   return (
-    <main>
-      <Header />
-      <ChatWindow />
-    </main>
-  );
+  <>
+  <LandingPage />;
+  </>)
 }

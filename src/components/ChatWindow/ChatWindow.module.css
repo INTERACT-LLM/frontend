@@ -8,6 +8,12 @@
   padding: 40px;
 }
 
+.typeTitle {
+  font-size: 24px;
+  font-weight: 600;
+  color: #111827;
+}
+
 .chatWindow {
   background: white;
 

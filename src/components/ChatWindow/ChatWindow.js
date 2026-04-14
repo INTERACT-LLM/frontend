@@ -5,7 +5,7 @@ const ENDPOINT = 'http://localhost:8000/chat';
 
 import styles from './ChatWindow.module.css';
 
-export default function ChatWindow() {
+export default function ChatWindow({ chatType }) {
   const [message, setMessage] = React.useState('');
   const [chat, setChat] = React.useState([]);
 
@@ -37,6 +37,7 @@ export default function ChatWindow() {
     return (
     <>
     <div className={styles.wrapper}>
+        <h1 className={styles.typeTitle}>{chatType.toUpperCase()}</h1>
         <div className={styles.chatWindow}>
         {chat.map((msg, i) => (
             <div key={i}>
