@@ -1,6 +1,8 @@
 import React from 'react';
 const ENDPOINT = 'http://localhost:8000/chat';
 
+import styles from './ChatWindow.module.css';
+
 export default function ChatWindow() {
   const [message, setMessage] = React.useState('');
   const [chat, setChat] = React.useState([]);
@@ -30,32 +32,31 @@ export default function ChatWindow() {
     setChat((prev) => [...prev, { role: 'assistant', text: data.message }]);
   }
 
-  return (
+    return (
     <>
-      <div
-        style={{
-          marginBottom: 20,
-          padding: 50,
-          border: '1px solid #ccc',
-          height: 300,
-          overflowY: 'scroll',
-        }}
-      >
+        <h2 className={styles.title}>Chat Window</h2>
+
+        <div className={styles.chatWindow}>
         {chat.map((msg, i) => (
-          <div key={i} style={{ margin: '8px 0' }}>
+            <div key={i}>
             <b>{msg.role}:</b> {msg.text}
-          </div>
+            </div>
         ))}
-      </div>
+        </div>
 
-      <input
-        value={message}
-        onChange={(e) => setMessage(e.target.value)}
-        placeholder="Type a message..."
-        style={{ width: '70%', marginRight: 10 }}
-      />
+        <form onSubmit={sendMessage} className={styles.inputRow}>
+        <input
+            type="text"
+            value={message}
+            onChange={(e) => setMessage(e.target.value)}
+            placeholder="Type a message..."
+            className={styles.input}
+        />
 
-      <button onClick={sendMessage}>Send</button>
+        <button type="submit" className={styles.button}>
+            Send
+        </button>
+        </form>
     </>
-  );
+    );
 }
