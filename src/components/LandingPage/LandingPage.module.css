@@ -1,0 +1,67 @@
+.wrapper {
+  min-height: 80vh;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  gap: 24px;
+  padding: 40px;
+}
+
+.title {
+  font-size: 50px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.subtitle {
+  font-size: 20px;
+  color: #4b5563;
+  max-width: 600px;
+  text-align: center;
+}
+
+.cardRow {
+  display: flex;
+  gap: 25px;
+
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+/* card */
+.card {
+  width: 360px;
+
+  padding: 20px;
+
+  background: white;
+  border-radius: 16px;
+
+  text-decoration: none;
+  color: inherit;
+
+  border: 1px solid #e5e7eb;
+
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
+
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+}
+
+.card h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.card p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+}
