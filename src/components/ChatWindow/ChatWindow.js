@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 const ENDPOINT = 'http://localhost:8000/chat';
 
@@ -34,8 +36,7 @@ export default function ChatWindow() {
 
     return (
     <>
-        <h2 className={styles.title}>Chat Window</h2>
-
+    <div className={styles.wrapper}>
         <div className={styles.chatWindow}>
         {chat.map((msg, i) => (
             <div key={i}>
@@ -57,6 +58,7 @@ export default function ChatWindow() {
             Send
         </button>
         </form>
+    </div>
     </>
     );
 }
