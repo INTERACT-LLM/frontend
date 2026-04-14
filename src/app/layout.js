@@ -1,3 +1,4 @@
+import Header from "@/components/Header/Header";
 import { Work_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
 
@@ -17,8 +18,22 @@ export { workSans, mono };
 
 export default function RootLayout({ children }) {
   return (
+    <html lang="en">
+      <body className="min-h-screen flex flex-col antialiased">
+        <Header />
+        <main className="flex-1">{children}</main>
+      </body>
+    </html>
+  );
+}
+
+// old root layout
+/*
+export default function RootLayout({ children }) {
+  return (
     <html lang="en" className={`${workSans.variable} ${mono.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
   );
 }
+*/
