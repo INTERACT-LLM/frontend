@@ -6,18 +6,18 @@ const ENDPOINT = 'http://localhost:8000/chat';
 import styles from './ChatWindow.module.css';
 
 export default function ChatWindow({ chatType }) {
-  const [message, setMessage] = React.useState('');
+  const [content, setContent] = React.useState('');
   const [chat, setChat] = React.useState([]);
 
-  async function sendMessage(event) {
+  async function sendContent(event) {
     event.preventDefault();
-    if (!message.trim()) return;
+    if (!content.trim()) return;
 
-    const userMessage = message;
+    const userContent = content;
 
-    // add user message to UI immediately
-    setChat((previousMessages) => [...previousMessages, { role: 'user', text: userMessage }]);
-    setMessage('');
+    // add user content to UI immediately
+    setChat((prev) => [...prev, { role: 'user', content: userContent }]);
+    setContent('');
 
     // call backend
     const response = await fetch(ENDPOINT, {
@@ -25,13 +25,13 @@ export default function ChatWindow({ chatType }) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ message: userMessage }),
+      body: JSON.stringify({ content: userContent }),
     });
 
     const data = await response.json();
 
     // add assistant reply
-    setChat((prev) => [...prev, { role: 'assistant', text: data.message }]);
+    setChat((prev) => [...prev, { role: 'assistant', content: data.content }]);
   }
 
     return (
@@ -41,16 +41,16 @@ export default function ChatWindow({ chatType }) {
         <div className={styles.chatWindow}>
         {chat.map((msg, i) => (
             <div key={i}>
-            <b>{msg.role}:</b> {msg.text}
+            <b>{msg.role}:</b> {msg.content}
             </div>
         ))}
         </div>
 
-        <form onSubmit={sendMessage} className={styles.inputRow}>
+        <form onSubmit={sendContent} className={styles.inputRow}>
         <input
             type="text"
-            value={message}
-            onChange={(e) => setMessage(e.target.value)}
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
             placeholder="Type a message..."
             className={styles.input}
         />
