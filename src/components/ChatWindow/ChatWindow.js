@@ -8,30 +8,39 @@ import styles from './ChatWindow.module.css';
 export default function ChatWindow({ chatType }) {
   const [content, setContent] = React.useState('');
   const [chat, setChat] = React.useState([]);
+  const [sessionId, setSessionId] = React.useState();
+
+  // create a new sessionId on mount
+  React.useEffect(() => {
+    const newSessionId = `session-${Date.now()}`;
+    setSessionId(newSessionId);
+  }, []);
 
   async function sendContent(event) {
     event.preventDefault();
     if (!content.trim()) return;
 
-    const userContent = content;
+    const userMessage = { role: 'user', content: content};
 
     // add user content to UI immediately
-    setChat((prev) => [...prev, { role: 'user', content: userContent }]);
+    setChat((prev) => [...prev, userMessage]);
     setContent('');
 
     // call backend
     const response = await fetch(ENDPOINT, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ content: userContent }),
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        message: userMessage,
+        session_id: sessionId
+      }),
     });
 
     const data = await response.json();
+    // remove the system prompt from the chat history before updating the UI  
+    const messagesShown = data.messages.filter((msg) => msg.role !== 'system');
 
-    // add assistant reply
-    setChat((prev) => [...prev, { role: 'assistant', content: data.content }]);
+    setChat(messagesShown);
   }
 
     return (
