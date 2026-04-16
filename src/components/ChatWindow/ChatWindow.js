@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-const ENDPOINT = 'http://localhost:8000/chat';
+const ENDPOINT = 'http://localhost:8000/api/chat';
 
 import styles from './ChatWindow.module.css';
 
