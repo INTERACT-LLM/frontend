@@ -1,0 +1,13 @@
+.bubble {
+  max-width: 72%;
+  padding: 9px 13px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: #1a1a1a;
+}
+
+.row {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}

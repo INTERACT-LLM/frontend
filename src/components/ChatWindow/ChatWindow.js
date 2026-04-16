@@ -3,7 +3,15 @@
 import React from 'react';
 const ENDPOINT = 'http://localhost:8000/api/chat';
 
+import { Send } from "lucide-react";
 import styles from './ChatWindow.module.css';
+import UserMessage from '@/components/UserMessage/UserMessage';
+import AssistantMessage from '@/components/AssistantMessage/AssistantMessage';
+
+const messageComponents = {
+  user: UserMessage,
+  assistant: AssistantMessage,
+};
 
 export default function ChatWindow({ chatType }) {
   const [content, setContent] = React.useState('');
@@ -49,11 +57,12 @@ export default function ChatWindow({ chatType }) {
     <div className={styles.wrapper}>
         <h1 className={styles.typeTitle}>{chatType.toUpperCase()}</h1>
         <div className={styles.chatWindow}>
-        {chat.map((msg, i) => (
-            <div key={i}>
-            <b>{msg.role}:</b> {msg.content}
-            </div>
-        ))}
+          {chat.map((msg, i) => {
+            const MessageComponent = messageComponents[msg.role];
+            return MessageComponent
+              ? <MessageComponent key={i} content={msg.content} />
+              : null;
+          })}
         </div>
 
         <form onSubmit={sendContent} className={styles.inputRow}>
@@ -66,7 +75,7 @@ export default function ChatWindow({ chatType }) {
         />
 
         <button type="submit" className={styles.button}>
-            Send
+            <Send size={16} />
         </button>
         </form>
     </div>
