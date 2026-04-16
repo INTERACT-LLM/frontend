@@ -30,18 +30,24 @@ html, body {
   flex: 1;
   min-height: 0;
 
-  overflow-y: auto;
-
   display: flex;
   flex-direction: column;
   gap: 16px;
-
-  padding: 8px 0;
 }
 
 .inputRow {
-  flex-shrink: 0;
+  position: fixed;
+  bottom: 24px; /* adjust to match your wrapper margin */
+  left: 50%;
+  transform: translateX(-50%);
+
+  width: min(680px, calc(100% - 48px));
+
   display: flex;
+  gap: 12px;
+  background: #f6f7fb;
+  padding: 20px;
+  border-radius: 12px;
 }
 
 .input {
