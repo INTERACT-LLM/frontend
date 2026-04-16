@@ -1,6 +1,4 @@
-import Link from "next/link";
 import styles from "./LandingPage.module.css";
-import Card from "@/components/Card/Card";
 import LessonGrid from "@/components/LessonGrid/LessonGrid";
 
 export default function LandingPage() {
