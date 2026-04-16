@@ -32,7 +32,8 @@ export default function ChatWindow({ chatType }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message: userMessage,
-        session_id: sessionId
+        session_id: sessionId,
+        lesson_id: chatType,
       }),
     });
 
