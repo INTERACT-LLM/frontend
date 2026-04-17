@@ -1,0 +1,70 @@
+.inputRow {
+  position: fixed;
+  left: 50%;
+  bottom: 16px;
+  transform: translateX(-50%);
+  width: min(calc(100% - 40px), 720px);
+  z-index: 10;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: color-mix(in srgb, #f6f7fb 88%, white 12%);
+  padding: 12px;
+  border: 1px solid #dce0f3;
+  border-radius: 16px;
+  box-shadow: 0 10px 24px rgba(48, 63, 158, 0.1);
+  backdrop-filter: blur(4px);
+  box-sizing: border-box;
+}
+
+.input {
+  flex: 1;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid #cfd5f1;
+  border-radius: 12px;
+  outline: none;
+  font-size: 14px;
+  line-height: 1.35;
+  background: #fdfdff;
+  color: #1c2035;
+  transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.input:focus {
+  border-color: #aeb8f7;
+  box-shadow: 0 0 0 3px rgba(135, 151, 243, 0.2);
+}
+
+.input:disabled {
+  background: #f3f4fa;
+  color: #8b90ab;
+  cursor: not-allowed;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border: none;
+  border-radius: 12px;
+  background: linear-gradient(145deg, black, black);
+  color: white;
+  cursor: pointer;
+  transition: transform 0.12s, opacity 0.15s, box-shadow 0.15s;
+  box-shadow: 0 6px 14px rgba(40, 58, 168, 0.35);
+}
+
+.button:hover {
+  transform: translateY(-1px);
+}
+
+.button:disabled {
+  opacity: 0.45;
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}

@@ -1,3 +1,4 @@
+import Markdown from 'react-markdown';
 import styles from './ChatMessage.module.css';
 
 export default function Message({
@@ -8,7 +9,7 @@ export default function Message({
   return (
     <div className={`${styles.row} ${rowClassName}`}>
       <div className={`${styles.bubble} ${bubbleClassName}`}>
-        {content}
+        <Markdown>{content}</Markdown>
       </div>
     </div>
   );
