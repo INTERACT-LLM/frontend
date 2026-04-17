@@ -13,19 +13,11 @@ export default function ChatWindow({ chatType }) {
   const [newMessage, setNewMessage] = React.useState('');
   const [isLoading, setIsLoading] = React.useState(false);
 
-  const wrapperRef = React.useRef();
-
   // create a new sessionId on mount
   React.useEffect(() => {
     const newSessionId = `session-${Date.now()}`;
     setSessionId(newSessionId);
   }, []);
-
-  React.useEffect(() => {
-    if (!wrapperRef.current) return;
-
-    wrapperRef.current.scrollTop = wrapperRef.current.scrollHeight;
-  }, [messages]);
 
   async function submitNewMessage(event) {
     event.preventDefault();
@@ -59,7 +51,7 @@ export default function ChatWindow({ chatType }) {
 
     return (
     <>
-    <div className={styles.wrapper} ref={wrapperRef}>
+    <div className={styles.wrapper}>
         <h1 className={styles.typeTitle}>{chatType.toUpperCase()}</h1>
         <div className={styles.chatWindow}>
           <ChatMessages messages={messages} isLoading={isLoading} />
