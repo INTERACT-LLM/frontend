@@ -52,11 +52,19 @@ export default function ChatWindow({ chatType }) {
     return (
     <>
     <div className={styles.wrapper}>
-        <h1 className={styles.typeTitle}>{chatType.toUpperCase()}</h1>
-        <div className={styles.chatWindow}>
-          <ChatMessages messages={messages} isLoading={isLoading} />
-          <ChatInput submitNewMessage={submitNewMessage} newMessage={newMessage} setNewMessage={setNewMessage} />
-        </div>
+      <h1 className={styles.typeTitle}>{chatType.toUpperCase()}</h1>
+
+      <div className={styles.chatWindow}>
+        <ChatMessages
+          messages={messages}
+          isLoading={isLoading}
+        />
+        <ChatInput
+          submitNewMessage={submitNewMessage}
+          newMessage={newMessage}
+          setNewMessage={setNewMessage}
+        />
+      </div>
     </div>
     </>
     );
