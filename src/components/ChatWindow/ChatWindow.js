@@ -17,6 +17,9 @@ export default function ChatWindow({ chatType }) {
   const [content, setContent] = React.useState('');
   const [chat, setChat] = React.useState([]);
   const [sessionId, setSessionId] = React.useState();
+  const [isSending, setIsSending] = React.useState(false);
+  const messageRefs = React.useRef([]);
+  const inputRef = React.useRef(null);
 
   // create a new sessionId on mount
   React.useEffect(() => {
@@ -24,61 +27,95 @@ export default function ChatWindow({ chatType }) {
     setSessionId(newSessionId);
   }, []);
 
+  React.useEffect(() => {
+    if (chat.length === 0) return;
+
+    const targetIndex = Math.max(chat.length - 2, 0);
+    const targetNode = messageRefs.current[targetIndex];
+    if (!targetNode) return;
+
+    targetNode.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start',
+    });
+  }, [chat]);
+
   async function sendContent(event) {
     event.preventDefault();
-    if (!content.trim()) return;
+    if (!content.trim() || !sessionId || isSending) return;
 
-    const userMessage = { role: 'user', content: content};
+    const userMessage = { role: 'user', content: content };
 
-    // add user content to UI immediately
     setChat((prev) => [...prev, userMessage]);
     setContent('');
+    setIsSending(true);
 
-    // call backend
-    const response = await fetch(ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: userMessage,
-        session_id: sessionId,
-        lesson_id: chatType,
-      }),
-    });
+    try {
+      const response = await fetch(ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          session_id: sessionId,
+          lesson_id: chatType,
+        }),
+      });
 
-    const data = await response.json();
-    // remove the system prompt from the chat history before updating the UI  
-    const messagesShown = data.messages.filter((msg) => msg.role !== 'system');
+      if (!response.ok) {
+        throw new Error('Failed to send message.');
+      }
 
-    setChat(messagesShown);
+      const data = await response.json();
+      const messagesShown = data.messages.filter((msg) => msg.role !== 'system');
+      setChat(messagesShown);
+    } catch {
+      setChat((prev) => [
+        ...prev,
+        {
+          role: 'assistant',
+          content: 'I could not send that message right now. Please try again.',
+        },
+      ]);
+    } finally {
+      setIsSending(false);
+      inputRef.current?.focus();
+    }
   }
 
-    return (
+  return (
     <>
-    <div className={styles.wrapper}>
+      <div className={styles.wrapper}>
         <h1 className={styles.typeTitle}>{chatType.toUpperCase()}</h1>
         <div className={styles.chatWindow}>
           {chat.map((msg, i) => {
             const MessageComponent = messageComponents[msg.role];
             return MessageComponent
-              ? <MessageComponent key={i} content={msg.content} />
+              ? (
+                <div key={i} ref={(node) => {
+                  messageRefs.current[i] = node;
+                }}>
+                  <MessageComponent content={msg.content} />
+                </div>
+              )
               : null;
           })}
         </div>
 
         <form onSubmit={sendContent} className={styles.inputRow}>
-        <input
+          <input
             type="text"
             value={content}
             onChange={(e) => setContent(e.target.value)}
             placeholder="Type a message..."
             className={styles.input}
-        />
-
-        <button type="submit" className={styles.button}>
+            ref={inputRef}
+            disabled={isSending}
+          />
+          <button type="submit" className={styles.button} disabled={isSending || !content.trim()}>
             <Send size={16} />
-        </button>
+          </button>
         </form>
-    </div>
+      </div>
     </>
-    );
+  );
 }
