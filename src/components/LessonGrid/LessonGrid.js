@@ -25,7 +25,7 @@ export default function LessonGrid() {
         {data?.lessons.map((lesson) => (
             <Card
             key={lesson.id}
-            href={`/chat/${lesson.id}`}
+            href={`/lessons/${lesson.id}`}
             title={lesson.ui_title}
             description={lesson.ui_lesson_description}
             />

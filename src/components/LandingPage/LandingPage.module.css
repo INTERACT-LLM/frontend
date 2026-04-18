@@ -6,14 +6,24 @@
   align-items: center;
   justify-content: center;
 
-  gap: 24px;
+  gap: 16px;
   padding: 40px;
+}
+
+.greeting {
+  font-size: 26px;
+  color: #9ca3af;
 }
 
 .title {
   font-size: 50px;
   font-weight: 600;
   color: #111827;
+  text-align: center;
+}
+
+.accent {
+  color: #7c3aed;
 }
 
 .subtitle {
@@ -21,4 +31,16 @@
   color: #4b5563;
   max-width: 600px;
   text-align: center;
+}
+
+.cta {
+  display: inline-block;
+  background: #7c3aed;
+  color: #fff;
+  font-size: 16px;
+  font-weight: 500;
+  padding: 12px 28px;
+  border-radius: 12px;
+  text-decoration: none;
+  margin-top: 8px;
 }
