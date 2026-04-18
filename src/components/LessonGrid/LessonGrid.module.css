@@ -1,7 +1,74 @@
+.page {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 48px 40px;
+  display: flex;
+  flex-direction: column;
+  gap: 48px;
+}
+
+.intro {
+  text-align: center;
+}
+
+.introTitle {
+  font-size: 32px;
+  font-weight: 600;
+  color: #111827;
+  margin-bottom: 8px;
+}
+
+.introSub {
+  font-size: 16px;
+  color: #6b7280;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.sectionHeading {
+  font-size: 13px;
+  font-weight: 600;
+  color: #9ca3af;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
 .grid {
   display: flex;
-  gap: 25px;
-
   flex-wrap: wrap;
+  gap: 25px;
   justify-content: center;
+}
+
+.lockedCard {
+  position: relative;
+  width: 360px;
+  padding: 20px;
+  background: #f9fafb;
+  border-radius: 16px;
+  border: 1px solid #e5e7eb;
+  color: #9ca3af;
+  cursor: not-allowed;
+  user-select: none;
+}
+
+.lockedCard h2 {
+  margin: 0 0 8px;
+  font-size: 18px;
+}
+
+.lockedCard p {
+  margin: 0;
+  font-size: 14px;
+}
+
+.lock {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 14px;
 }
