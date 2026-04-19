@@ -1,8 +1,8 @@
 import React from 'react';
+import styles from './ChatMessages.module.css';
 
 import AssistantMessage from '@/components/AssistantMessage/AssistantMessage';
 import UserMessage from '@/components/UserMessage/UserMessage';
-
 
 export default function ChatMessages({ messages, isLoading }) {
     const bottomRef = React.useRef(null);
@@ -22,11 +22,17 @@ export default function ChatMessages({ messages, isLoading }) {
                     )}
                 </div>
             ))}
+
             {isLoading && (
-                <div className="typing-indicator">
-                    <span /><span /><span />
+                <div className={styles.typingRow}>
+                    <div className={styles.typingBubble}>
+                        <span className={styles.dot} />
+                        <span className={styles.dot} />
+                        <span className={styles.dot} />
+                    </div>
                 </div>
             )}
+
             <div ref={bottomRef} />
         </div>
     );
