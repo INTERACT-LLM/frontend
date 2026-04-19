@@ -1,70 +1,57 @@
 .inputRow {
-  position: fixed;
-  left: 50%;
-  bottom: 16px;
-  transform: translateX(-50%);
-  width: min(calc(100% - 40px), 720px);
-  z-index: 10;
-
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  background: color-mix(in srgb, #f6f7fb 88%, white 12%);
-  padding: 12px;
-  border: 1px solid #dce0f3;
-  border-radius: 16px;
-  box-shadow: 0 10px 24px rgba(48, 63, 158, 0.1);
-  backdrop-filter: blur(4px);
-  box-sizing: border-box;
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
 }
 
 .input {
-  flex: 1;
-  min-width: 0;
-  padding: 12px 14px;
-  border: 1px solid #cfd5f1;
-  border-radius: 12px;
-  outline: none;
-  font-size: 14px;
-  line-height: 1.35;
-  background: #fdfdff;
-  color: #1c2035;
-  transition: border-color 0.15s, box-shadow 0.15s;
+    flex: 1;
+    resize: none;
+    font-size: 14px;
+    font-family: inherit;
+    line-height: 1.5;
+    padding: 9px 12px;
+    min-height: 38px;
+    max-height: 120px;
+    border-radius: 8px;
+    border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+    background: var(--color-background-secondary, #f4f3ef);
+    color: var(--color-text-primary, #1a1a18);
+    outline: none;
+    overflow-y: auto;
 }
 
 .input:focus {
-  border-color: #aeb8f7;
-  box-shadow: 0 0 0 3px rgba(135, 151, 243, 0.2);
+    border-color: var(--color-border-secondary, #d3d1c7);
 }
 
 .input:disabled {
-  background: #f3f4fa;
-  color: #8b90ab;
-  cursor: not-allowed;
+    opacity: 0.5;
+    cursor: not-allowed;
 }
 
 .button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 44px;
-  height: 44px;
-  border: none;
-  border-radius: 12px;
-  background: linear-gradient(145deg, black, black);
-  color: white;
-  cursor: pointer;
-  transition: transform 0.12s, opacity 0.15s, box-shadow 0.15s;
-  box-shadow: 0 6px 14px rgba(40, 58, 168, 0.35);
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: 8px;
+    border: none;
+    background: #1d9e75;
+    color: #fff;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s ease;
 }
 
-.button:hover {
-  transform: translateY(-1px);
+.button:hover:not(:disabled) {
+    background: #0f6e56;
 }
 
 .button:disabled {
-  opacity: 0.45;
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
+    background: var(--color-background-secondary, #f4f3ef);
+    border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+    color: var(--color-text-tertiary, #b4b2a9);
+    cursor: not-allowed;
 }

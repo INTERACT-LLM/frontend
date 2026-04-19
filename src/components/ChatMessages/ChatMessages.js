@@ -1,26 +1,20 @@
-import AssistantMessage from '@/components/AssistantMessage/AssistantMessage';
-import UserMessage from '@/components/UserMessage/UserMessage';
 import React from 'react';
 
-export default function ChatMessages({ messages }) {
-    const lastUserRef = React.useRef(null);
+import AssistantMessage from '@/components/AssistantMessage/AssistantMessage';
+import UserMessage from '@/components/UserMessage/UserMessage';
 
-    const lastUserIndex = React.useMemo(
-        () => messages.map(m => m.role).lastIndexOf('user'),
-        [messages]
-    );
 
-    React.useLayoutEffect(() => {
-        if (!lastUserRef.current) return;
-        requestAnimationFrame(() => {
-            lastUserRef.current?.scrollIntoView({ block: 'start', behavior: 'smooth' });
-        });
-    }, [messages]);
+export default function ChatMessages({ messages, isLoading }) {
+    const bottomRef = React.useRef(null);
+
+    React.useEffect(() => {
+        bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }, [messages, isLoading]);
 
     return (
         <div>
             {messages.map((msg, i) => (
-                <div key={i} ref={i === lastUserIndex ? lastUserRef : null}>
+                <div key={i}>
                     {msg.role === 'assistant' ? (
                         <AssistantMessage content={msg.content} />
                     ) : (
@@ -28,6 +22,12 @@ export default function ChatMessages({ messages }) {
                     )}
                 </div>
             ))}
+            {isLoading && (
+                <div className="typing-indicator">
+                    <span /><span /><span />
+                </div>
+            )}
+            <div ref={bottomRef} />
         </div>
     );
 }
