@@ -1,13 +1,15 @@
-.bubble {
-  max-width: 80%;
-  padding: 13px 12px;
-  font-size: 20px;
-  line-height: 1.55;
-  color: #1a1a1a;
+.message {
+  max-width: 68%;
+  padding: 10px 14px;
+  font-size: 14px;
+  line-height: 1.6;
+  border-radius: 14px;
+  margin-bottom: 12px;
 }
 
-.row {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-}
+.message p { margin: 0; }
+.message p + p { margin-top: 0.5em; }
+.message ul, .message ol { margin: 0.4em 0 0 1.2em; padding: 0; }
+.message li { margin-bottom: 2px; }
+.message code { font-size: 0.85em; padding: 1px 4px; border-radius: 4px; background: rgba(0,0,0,0.08); }
+.message pre { margin: 0.5em 0 0; }

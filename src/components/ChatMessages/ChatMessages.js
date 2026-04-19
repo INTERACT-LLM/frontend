@@ -1,8 +1,6 @@
 import React from 'react';
 import styles from './ChatMessages.module.css';
-
-import AssistantMessage from '@/components/AssistantMessage/AssistantMessage';
-import UserMessage from '@/components/UserMessage/UserMessage';
+import ChatMessage from '@/components/ChatMessage/ChatMessage';
 
 export default function ChatMessages({ messages, isLoading }) {
     const bottomRef = React.useRef(null);
@@ -12,15 +10,13 @@ export default function ChatMessages({ messages, isLoading }) {
     }, [messages, isLoading]);
 
     return (
-        <div>
+        <div className={styles.messages}>
             {messages.map((msg, i) => (
-                <div key={i}>
-                    {msg.role === 'assistant' ? (
-                        <AssistantMessage content={msg.content} />
-                    ) : (
-                        <UserMessage content={msg.content} />
-                    )}
-                </div>
+                <ChatMessage
+                    key={i}
+                    content={msg.content}
+                    className={msg.role === 'user' ? styles.userMessage : styles.assistantMessage}
+                />
             ))}
 
             {isLoading && (

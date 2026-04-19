@@ -1,9 +1,0 @@
-.row {
-  flex-direction: row-reverse;
-}
-
-.bubble {
-  border: 0.5px solid #d8d9e2;
-  border-radius: 14px 14px 4px 14px;
-  background: #ffffff;
-}
