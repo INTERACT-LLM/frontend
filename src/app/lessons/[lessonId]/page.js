@@ -1,11 +1,11 @@
 import ChatWindow from "@/components/ChatWindow/ChatWindow";
 
 export default async function ChatPage({ params }) {
-  const { type } = await params;
+  const { lessonId } = await params;
 
   return (
     <main>
-      <ChatWindow chatType={type} />
+      <ChatWindow lessonId={lessonId} />
     </main>
   );
 }

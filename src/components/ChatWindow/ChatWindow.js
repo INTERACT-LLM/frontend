@@ -1,13 +1,14 @@
 'use client';
 
 import React from 'react';
-const ENDPOINT = 'http://localhost:8000/api/chat';
 
 import styles from './ChatWindow.module.css';
 import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
 
-export default function ChatWindow({ chatType }) {
+const CHAT_ENDPOINT = 'http://localhost:8000/api/chat';
+
+export default function ChatWindow({ lessonId }) {
   const [messages, setMessages] = React.useState([]);
   const [sessionId, setSessionId] = React.useState();
   const [newMessage, setNewMessage] = React.useState('');
@@ -31,13 +32,13 @@ export default function ChatWindow({ chatType }) {
 
     // call backend
     setIsLoading(true);
-    const response = await fetch(ENDPOINT, {
+    const response = await fetch(CHAT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         message: userMessage,
         session_id: sessionId,
-        lesson_id: chatType,
+        lesson_id: lessonId,
       }),
     });
 
@@ -52,7 +53,7 @@ export default function ChatWindow({ chatType }) {
     return (
     <>
     <div className={styles.wrapper}>
-      <h1 className={styles.typeTitle}>{chatType.toUpperCase()}</h1>
+      <h1 className={styles.typeTitle}>{lessonId.toUpperCase()}</h1>
 
       <div className={styles.chatWindow}>
         <ChatMessages
