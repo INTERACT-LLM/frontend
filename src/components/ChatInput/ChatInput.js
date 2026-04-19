@@ -1,7 +1,17 @@
 import { Send } from "lucide-react";
 import styles from './ChatInput.module.css';
+import React from 'react';
 
 export default function ChatInput({ submitNewMessage, newMessage = '', setNewMessage, disabled }) {
+    const textareaRef = React.useRef(null);
+
+    // re-focus whenever disabled flips back to false (i.e. response arrived)
+    React.useEffect(() => {
+        if (!disabled) {
+            textareaRef.current?.focus();
+        }
+    }, [disabled]);
+
     function handleKeyDown(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
@@ -12,6 +22,7 @@ export default function ChatInput({ submitNewMessage, newMessage = '', setNewMes
     return (
         <div className={styles.inputRow}>
             <textarea
+                ref={textareaRef}
                 value={newMessage}
                 onChange={(e) => setNewMessage?.(e.target.value)}
                 onKeyDown={handleKeyDown}
