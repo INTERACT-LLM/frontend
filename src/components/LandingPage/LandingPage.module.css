@@ -23,7 +23,7 @@
 }
 
 .accent {
-  color: #7c3aed;
+  color: #1d9e75;
 }
 
 .subtitle {
@@ -35,7 +35,7 @@
 
 .cta {
   display: inline-block;
-  background: #7c3aed;
+  background: #1d9e75; /* used to be #7c3aed = purple; might switch back later */
   color: #fff;
   font-size: 16px;
   font-weight: 500;
