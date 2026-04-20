@@ -9,6 +9,7 @@ import ChatInput from "@/components/ChatInput/ChatInput";
 
 const CHAT_ENDPOINT = 'http://localhost:8000/api/chat';
 const LESSONS_ENDPOINT = 'http://localhost:8000/api/lessons';
+const FEEDBACK_ENDPOINT = 'http://localhost:8000/api/feedback/immediate';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -39,20 +40,38 @@ export default function ChatWindow({ lessonId }) {
     const userMessage = { role: 'user', content: newMessage };
     setMessages((prev) => [...prev, userMessage]);
     setNewMessage('');
-
     setIsLoading(true);
-    const response = await fetch(CHAT_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: userMessage,
-        session_id: sessionId,
-        lesson_id: lessonId,
-      }),
-    });
 
-    const data = await response.json();
-    const messagesShown = data.messages.filter((msg) => msg.role !== 'system');
+    // fire both calls in parallel (chat + feedback)
+    const [chatResponse, feedbackResponse] = await Promise.all([
+      fetch(CHAT_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: userMessage,
+          session_id: sessionId,
+          lesson_id: lessonId,
+        }),
+      }).then((res) => res.json()),
+
+      fetch(FEEDBACK_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          last_user_message: userMessage,
+        }),
+      }).then((res) => res.json()),
+    ]);
+
+    const messagesShown = chatResponse.messages.filter((msg) => msg.role !== 'system');
+    
+    // Attach feedback to the last assistant message
+    const feedback = feedbackResponse?.FeedbackResponse;
+    if (feedback?.has_error) {
+      const lastMsg = messagesShown[messagesShown.length - 1];
+      lastMsg.feedback = feedback;
+    }
+
     setMessages(messagesShown);
     setIsLoading(false);
   }
