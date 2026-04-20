@@ -18,6 +18,8 @@ export default function ChatWindow({ lessonId }) {
   const [messages, setMessages] = React.useState([]);
   const [sessionId] = React.useState(() => `session-${Date.now()}`);
   const [newMessage, setNewMessage] = React.useState('');
+  const [feedbacks, setFeedbacks] = React.useState([]);
+
   const [isLoading, setIsLoading] = React.useState(false);
   const [isComplete, setIsComplete] = React.useState(false);
 
@@ -33,6 +35,22 @@ export default function ChatWindow({ lessonId }) {
   const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
   const progressPct = minTurns ? Math.min(100, Math.round((userTurns / minTurns) * 100)) : 0;
 
+  async function fetchChat(userMessage) {
+    return fetch(CHAT_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ message: userMessage, session_id: sessionId, lesson_id: lessonId }),
+    }).then((res) => res.json());
+  }
+
+  async function fetchFeedback(userMessage) {
+    return fetch(FEEDBACK_ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ last_user_message: userMessage }),
+    }).then((res) => res.json());
+  }
+
   async function submitNewMessage(event) {
     event.preventDefault();
     if (!newMessage.trim() || isLoading) return;
@@ -42,37 +60,15 @@ export default function ChatWindow({ lessonId }) {
     setNewMessage('');
     setIsLoading(true);
 
-    // fire both calls in parallel (chat + feedback)
+    // fetch chat response and feedback in parallel
     const [chatResponse, feedbackResponse] = await Promise.all([
-      fetch(CHAT_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          session_id: sessionId,
-          lesson_id: lessonId,
-        }),
-      }).then((res) => res.json()),
-
-      fetch(FEEDBACK_ENDPOINT, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          last_user_message: userMessage,
-        }),
-      }).then((res) => res.json()),
+      fetchChat(userMessage),
+      fetchFeedback(userMessage),
     ]);
 
     const messagesShown = chatResponse.messages.filter((msg) => msg.role !== 'system');
-    
-    // Attach feedback to the last assistant message
-    const feedback = feedbackResponse?.FeedbackResponse;
-    if (feedback?.has_error) {
-      const lastMsg = messagesShown[messagesShown.length - 1];
-      lastMsg.feedback = feedback;
-    }
-
     setMessages(messagesShown);
+    setFeedbacks((prev) => [...prev, { feedback: feedbackResponse?.FeedbackResponse, feedbackStatus: feedbackResponse?.feedback_status }]);
     setIsLoading(false);
   }
 
@@ -122,7 +118,7 @@ export default function ChatWindow({ lessonId }) {
 
       {/* Messages */}
       <div className={styles.messages}>
-        <ChatMessages messages={messages} isLoading={isLoading} />
+        <ChatMessages messages={messages} isLoading={isLoading} feedbacks={feedbacks} />
       </div>
 
       {/* Footer */}
