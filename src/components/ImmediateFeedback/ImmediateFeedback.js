@@ -3,6 +3,13 @@ import styles from './ImmediateFeedback.module.css';
 
 export default function ImmediateFeedback({ feedback }) {
   const [isOpen, setIsOpen] = React.useState(false);
+
+  const hasCorrected = feedback?.corrected_text;
+  const hasExplanation = feedback?.english_error_explanation;
+
+  // if it passes the has_error check, it should have at least one of these, but just in case, we won't render anything if both are missing
+  if (!hasCorrected && !hasExplanation) return null;
+
   return (
     <div className={styles.immediateFeedback}>
       <button onClick={() => setIsOpen(!isOpen)} className={styles.feedbackToggle}>
@@ -10,8 +17,8 @@ export default function ImmediateFeedback({ feedback }) {
       </button>
       {isOpen && (
         <div className={styles.feedbackBody}>
-          <p className={styles.feedbackCorrected}>{feedback.corrected_text}</p>
-          <p className={styles.feedbackExplanation}>{feedback.english_error_explanation}</p>
+          {hasCorrected && <p className={styles.feedbackCorrected}>{feedback.corrected_text}</p>}
+          {hasExplanation && <p className={styles.feedbackExplanation}>{feedback.english_error_explanation}</p>}
         </div>
       )}
     </div>
