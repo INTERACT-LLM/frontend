@@ -3,19 +3,14 @@
   flex-direction: column;
 }
 
-.userMessage {
-  align-self: flex-end;
-  background: #1d9e75;
-  color: #fff;
-  border-radius: 14px 14px 4px 14px;
+.userRow {
+  display: flex;
+  justify-content: flex-end;
 }
 
-.assistantMessage {
-  align-self: flex-start;
-  background-color: #f4f3ef;
-  color: #4a4b57;
-  border-radius: 14px 14px 14px 4px;
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+.assistantRow {
+  display: flex;
+  justify-content: flex-start;
 }
 
 .typingRow {
