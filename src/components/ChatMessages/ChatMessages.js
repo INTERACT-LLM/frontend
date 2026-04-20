@@ -5,22 +5,38 @@ import UserMessage from '@/components/UserMessage/UserMessage';
 
 const isAssistant = (msg) => msg.role === 'assistant';
 
-export default function ChatMessages({ messages, isLoading }) {
+export default function ChatMessages({ messages, feedbacks, isLoading }) {
     const bottomRef = React.useRef(null);
 
     React.useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }, [messages, isLoading]);
 
+    // pre-map each message index to its feedback
+    const feedbackByIndex = React.useMemo(() => {
+        const map = {};
+        let assistantIdx = 0;
+        messages.forEach((msg, i) => {
+            if (msg.role === 'assistant') {
+                map[i] = feedbacks[assistantIdx++];
+            }
+        });
+        return map;
+    }, [messages, feedbacks]);
+
     return (
         <div className={styles.messages}>
             {messages.map((msg, i) => (
-            <div key={i} className={isAssistant(msg) ? styles.assistantRow : styles.userRow}>
-                {isAssistant(msg)
-                ? <AssistantMessage content={msg.content} feedback={msg.feedback} />
-                : <UserMessage content={msg.content} />
-                }
-            </div>
+                <div key={i} className={isAssistant(msg) ? styles.assistantRow : styles.userRow}>
+                    {isAssistant(msg)
+                        ? <AssistantMessage
+                            content={msg.content}
+                            feedback={feedbackByIndex[i]?.feedback}
+                            feedbackStatus={feedbackByIndex[i]?.feedbackStatus}
+                          />
+                        : <UserMessage content={msg.content} />
+                    }
+                </div>
             ))}
 
             {isLoading && (
