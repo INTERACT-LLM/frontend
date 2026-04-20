@@ -32,7 +32,6 @@ export default function ChatMessages({ messages, feedbacks, isLoading }) {
                         ? <AssistantMessage
                             content={msg.content}
                             feedback={feedbackByIndex[i]?.feedback}
-                            feedbackStatus={feedbackByIndex[i]?.feedbackStatus}
                           />
                         : <UserMessage content={msg.content} />
                     }
