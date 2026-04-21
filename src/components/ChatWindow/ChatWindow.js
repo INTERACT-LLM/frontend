@@ -7,6 +7,7 @@ import styles from './ChatWindow.module.css';
 import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
 import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
+import ProgressBar from '@/components/ProgressBar/ProgressBar';
 
 const CHAT_ENDPOINT = 'http://localhost:8000/api/chat';
 const LESSONS_ENDPOINT = 'http://localhost:8000/api/lessons';
@@ -16,7 +17,6 @@ const DETAILED_FEEDBACK_ENDPOINT = 'http://localhost:8000/api/feedback/detailed'
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function ChatWindow({ lessonId }) {
-  const router = useRouter();
   const [messages, setMessages] = React.useState([]);
   const [sessionId] = React.useState(() => `session-${Date.now()}`);
   const [feedbacks, setFeedbacks] = React.useState([]);
@@ -31,9 +31,9 @@ export default function ChatWindow({ lessonId }) {
 
   const userTurns = messages.filter((m) => m.role === 'user').length;
   const minTurns = lessonData?.min_turns ?? null;
-  const canEndLesson = minTurns !== null && userTurns >= minTurns;
   const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
-  const progressPct = minTurns ? Math.min(100, Math.round((userTurns / minTurns) * 100)) : 0;
+  const canEndLesson = minTurns !== null && userTurns >= minTurns;
+
 
   async function fetchChat(userMessage) {
     return fetch(CHAT_ENDPOINT, {
@@ -118,19 +118,7 @@ export default function ChatWindow({ lessonId }) {
       </div>
 
       <div className={styles.footer}>
-        {minTurns !== null && (
-          <div className={styles.progressRow}>
-            <div className={styles.progressBar}>
-              <div
-                className={styles.progressFill}
-                style={{ width: `${progressPct}%` }}
-              />
-            </div>
-            <span className={styles.progressLabel}>
-              {userTurns} / {minTurns} turns
-            </span>
-          </div>
-        )}
+        <ProgressBar userTurns={userTurns} minTurns={minTurns} />
         <ChatInput onSubmit={submitNewMessage} disabled={isLoading} />
       </div>
     </div>
