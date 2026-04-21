@@ -1,0 +1,60 @@
+.loadingRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+ 
+.spinner {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border: 1.5px solid var(--color-border-tertiary, #e5e5e3);
+  border-top-color: #1d9e75;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+ 
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+ 
+.loadingText {
+  font-size: 13px;
+  color: var(--color-text-secondary, #888780);
+}
+ 
+.feedbackPara {
+  font-size: 14px;
+  line-height: 1.65;
+  color: var(--color-text-primary, #1a1a18);
+  margin: 0;
+}
+ 
+.feedbackList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+ 
+.feedbackItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text-primary, #1a1a18);
+}
+ 
+.dot {
+  display: inline-block;
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: #1d9e75;
+  margin-top: 0.55em;
+  flex-shrink: 0;
+}

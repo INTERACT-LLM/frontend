@@ -1,0 +1,86 @@
+/* CompletionWindow.module.css */
+
+.completionWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: calc(100vh - 6rem);
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.completionCard {
+  text-align: center;
+  padding: 3rem 2.5rem;
+  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  border-radius: 12px;
+  background: var(--color-background-primary, #fff);
+  min-width: 320px;
+  max-width: 920px;
+  width: 100%;
+}
+
+.completionBadge {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #0f6e56;
+  background: #e1f5ee;
+  padding: 3px 10px;
+  border-radius: 6px;
+  margin-bottom: 1.25rem;
+}
+
+.completionTitle {
+  font-size: 1.4rem;
+  font-weight: 500;
+  color: var(--color-text-primary, #1a1a18);
+  margin: 0 0 0.5rem;
+}
+
+.completionStat {
+  font-size: 14px;
+  color: var(--color-text-secondary, #888780);
+  margin: 0 0 2rem;
+}
+
+/* Divider between stat and feedback */
+.divider {
+  height: 0.5px;
+  background: var(--color-border-tertiary, #e5e5e3);
+  margin: 0 0 1.5rem;
+}
+
+/* Feedback section */
+.feedbackSection {
+  text-align: left;
+  margin-bottom: 2rem;
+}
+
+.feedbackHeading {
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-text-secondary, #888780);
+  margin: 0 0 0.75rem;
+}
+
+.returnButton {
+  display: inline-block;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: 0.5px solid var(--color-border-secondary, #d3d1c7);
+  background: transparent;
+  color: var(--color-text-primary, #1a1a18);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.returnButton:hover {
+  background: var(--color-background-secondary, #f4f3ef);
+}

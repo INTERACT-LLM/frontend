@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import styles from './ChatWindow.module.css';
 import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
+import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
 
 const CHAT_ENDPOINT = 'http://localhost:8000/api/chat';
 const LESSONS_ENDPOINT = 'http://localhost:8000/api/lessons';
@@ -82,27 +83,7 @@ export default function ChatWindow({ lessonId }) {
   }
 
   if (isComplete) {
-    return (
-      <div className={styles.completionWrapper}>
-        <div className={styles.completionCard}>
-          <div className={styles.completionBadge}>Complete</div>
-          <h2 className={styles.completionTitle}>{lessonId.toUpperCase()}</h2>
-          <p className={styles.completionStat}>
-            {userTurns} turn{userTurns !== 1 ? 's' : ''} completed
-          </p>
-          {detailedFeedback ? (
-            <div className={styles.detailedFeedback}>
-              <p>{detailedFeedback}</p>
-            </div>
-          ) : (
-            <p className={styles.loadingFeedback}>Generating feedback...</p>
-          )}
-          <button className={styles.returnButton} onClick={() => router.push('/lessons')}>
-            ← Return to lessons
-          </button>
-        </div>
-      </div>
-    );
+    return <CompletionWindow lessonId={lessonId} userTurns={userTurns} detailedFeedback={detailedFeedback} />;
   }
 
   return (
