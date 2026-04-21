@@ -19,9 +19,7 @@ export default function ChatWindow({ lessonId }) {
   const router = useRouter();
   const [messages, setMessages] = React.useState([]);
   const [sessionId] = React.useState(() => `session-${Date.now()}`);
-  const [newMessage, setNewMessage] = React.useState('');
   const [feedbacks, setFeedbacks] = React.useState([]);
-
   const [isLoading, setIsLoading] = React.useState(false);
   const [isComplete, setIsComplete] = React.useState(false);
   const [detailedFeedback, setDetailedFeedback] = React.useState(null);
@@ -62,13 +60,11 @@ export default function ChatWindow({ lessonId }) {
     }).then((res) => res.json());
   }
 
-  async function submitNewMessage(event) {
-    event.preventDefault();
+  async function submitNewMessage(newMessage) {
     if (!newMessage.trim() || isLoading) return;
 
     const userMessage = { role: 'user', content: newMessage };
     setMessages((prev) => [...prev, userMessage]);
-    setNewMessage('');
     setIsLoading(true);
 
     const [chatResponse, feedbackResponse] = await Promise.all([
@@ -135,12 +131,7 @@ export default function ChatWindow({ lessonId }) {
             </span>
           </div>
         )}
-        <ChatInput
-          submitNewMessage={submitNewMessage}
-          newMessage={newMessage}
-          setNewMessage={setNewMessage}
-          disabled={isLoading}
-        />
+        <ChatInput onSubmit={submitNewMessage} disabled={isLoading} />
       </div>
     </div>
   );
