@@ -2,7 +2,6 @@
 
 import React from 'react';
 import useSWR from 'swr';
-import { useRouter } from 'next/navigation';
 import styles from './ChatWindow.module.css';
 import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
