@@ -46,7 +46,7 @@ export default function ChatWindow({ lessonId }) {
     return fetch(FEEDBACK_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ last_user_message: userMessage }),
+      body: JSON.stringify({ last_user_message: userMessage, lesson_id: lessonId }),
     }).then((res) => res.json());
   }
 
@@ -55,7 +55,7 @@ export default function ChatWindow({ lessonId }) {
     return fetch(DETAILED_FEEDBACK_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: cleanMessages }),
+      body: JSON.stringify({ messages: cleanMessages, lesson_id: lessonId}),
     }).then((res) => res.json());
   }
 
