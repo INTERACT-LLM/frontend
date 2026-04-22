@@ -96,7 +96,7 @@ export default function ChatWindow({ lessonId }) {
             setIsComplete(true);
             try {
               const response = await fetchDetailedFeedback(messages);
-              setDetailedFeedback(response?.summary || '');
+              setDetailedFeedback(response?.GeneralFeedbackResponse || '');
             } catch (err) {
               console.error('detailed feedback error:', err);
             }

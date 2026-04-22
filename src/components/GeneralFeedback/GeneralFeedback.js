@@ -13,13 +13,17 @@ export default function GeneralFeedback({ feedback }) {
     );
   }
 
-  const lines = feedback
-    .split(/\n+/)
-    .map((l) => l.trim())
-    .filter(Boolean);
+  const positiveFeedback = feedback.positive || '';
+  const improvementsFeedback = feedback.improvements || '';
 
-  if (lines.length <= 1) {
-    return <p className={styles.feedbackPara}>{feedback}</p>;
+  console.log('GeneralFeedback received:', { positiveFeedback, improvementsFeedback });
+
+  const lines = [];
+  if (positiveFeedback) {
+    lines.push(`Positive: ${positiveFeedback}`);
+  }
+  if (improvementsFeedback) {
+    lines.push(`Improvements: ${improvementsFeedback}`);
   }
 
   return (
