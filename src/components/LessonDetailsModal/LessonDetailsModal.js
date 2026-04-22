@@ -105,7 +105,6 @@ export default function LessonDetailsModal({ lesson, prompts, onClose }) {
                   <PromptBlock
                     label="Chat system prompt"
                     content={prompts.chat_system_prompt}
-                    defaultOpen
                   />
                   <PromptBlock
                     label="Feedback system prompt"
