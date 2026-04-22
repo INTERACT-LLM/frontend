@@ -1,9 +1,10 @@
+/* ── Loading state ─────────────────────────────────── */
 .loadingRow {
   display: flex;
   align-items: center;
   gap: 8px;
 }
- 
+
 .spinner {
   display: inline-block;
   width: 12px;
@@ -14,32 +15,87 @@
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
 }
- 
+
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
- 
+
 .loadingText {
   font-size: 13px;
   color: var(--color-text-secondary, #888780);
 }
- 
-.feedbackPara {
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--color-text-primary, #1a1a18);
-  margin: 0;
+
+/* ── Wrapper ───────────────────────────────────────── */
+.feedbackWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
- 
+
+/* ── Section card ──────────────────────────────────── */
+.section {
+  border-radius: 10px;
+  padding: 1rem 1.1rem;
+}
+
+.positive {
+  background: #f0faf6;
+  border: 1px solid #c3e8d8;
+}
+
+.improvements {
+  background: #fdf8f0;
+  border: 1px solid #e8dcc3;
+}
+
+/* ── Section heading ───────────────────────────────── */
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 0.7rem;
+}
+
+.sectionIcon {
+  font-size: 11px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.positive .sectionIcon {
+  color: #1d9e75;
+}
+
+.improvements .sectionIcon {
+  color: #c98a2e;
+}
+
+.sectionTitle {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.positive .sectionTitle {
+  color: #1a7a5a;
+}
+
+.improvements .sectionTitle {
+  color: #9a6620;
+}
+
+/* ── List ──────────────────────────────────────────── */
 .feedbackList {
   list-style: none;
   margin: 0;
   padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.5rem;
 }
- 
+
 .feedbackItem {
   display: flex;
   align-items: flex-start;
@@ -48,13 +104,30 @@
   line-height: 1.6;
   color: var(--color-text-primary, #1a1a18);
 }
- 
+
 .dot {
   display: inline-block;
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #1d9e75;
-  margin-top: 0.55em;
+  margin-top: 0.58em;
   flex-shrink: 0;
+}
+
+.positive .dot {
+  background: #1d9e75;
+}
+
+.improvements .dot {
+  background: #c98a2e;
+}
+
+/* ── target language text highlight ────────────────────────── */
+:global(.targetLang) {
+  font-style: normal;
+  font-weight: 500;
+  background: rgba(29, 158, 117, 0.1);
+  color: #1a7a5a;
+  border-radius: 3px;
+  padding: 0 3px;
 }
