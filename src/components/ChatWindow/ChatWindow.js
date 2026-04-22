@@ -16,7 +16,15 @@ const DETAILED_FEEDBACK_ENDPOINT = 'http://localhost:8000/api/feedback/detailed'
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
-function fetchLessonDetails(lessonId) {
+export default function ChatWindow({ lessonId }) {
+  const [messages, setMessages] = React.useState([]);
+  const [sessionId] = React.useState(() => `session-${Date.now()}`);
+  const [feedbacks, setFeedbacks] = React.useState([]);
+  const [isLoading, setIsLoading] = React.useState(false);
+  const [isComplete, setIsComplete] = React.useState(false);
+  const [detailedFeedback, setDetailedFeedback] = React.useState(null);
+  const [showDetails, setShowDetails] = React.useState(false);
+
   const { data: lessonData } = useSWR(
     lessonId ? `${LESSONS_ENDPOINT}/${lessonId}` : null,
     fetcher
@@ -26,20 +34,6 @@ function fetchLessonDetails(lessonId) {
     lessonId ? `${LESSONS_ENDPOINT}/${lessonId}/prompts` : null,
     fetcher
   );
-
-  return { lessonData, promptsData };
-}
-
-export default function ChatWindow({ lessonId }) {
-  const [messages, setMessages] = React.useState([]);
-  const [sessionId] = React.useState(() => `session-${Date.now()}`);
-  const [feedbacks, setFeedbacks] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(false);
-  const [isComplete, setIsComplete] = React.useState(false);
-  const [detailedFeedback, setDetailedFeedback] = React.useState(null);
-  const [showDetails, setShowDetails] = React.useState(false);
-  
-  const { lessonData, promptsData } = fetchLessonDetails(lessonId);
 
   const userTurns = messages.filter((m) => m.role === 'user').length;
   const minTurns = lessonData?.min_turns ?? null;
@@ -104,10 +98,7 @@ export default function ChatWindow({ lessonId }) {
         </div>
 
         <div className={styles.headerRight}>
-          <button
-            className={styles.detailsBtn}
-            onClick={() => setShowDetails(true)}
-          >
+          <button className={styles.detailsBtn} onClick={() => setShowDetails(true)}>
             See lesson details
           </button>
           <button
