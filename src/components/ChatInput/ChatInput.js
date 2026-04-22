@@ -2,20 +2,26 @@ import { Send } from "lucide-react";
 import styles from './ChatInput.module.css';
 import React from 'react';
 
-export default function ChatInput({ submitNewMessage, newMessage = '', setNewMessage, disabled }) {
+export default function ChatInput({ onSubmit, disabled }) {
+    const [newMessage, setNewMessage] = React.useState('');
     const textareaRef = React.useRef(null);
 
-    // re-focus whenever disabled flips back to false (i.e. response arrived)
     React.useEffect(() => {
         if (!disabled) {
             textareaRef.current?.focus();
         }
     }, [disabled]);
 
+    function handleSubmit() {
+        if (!newMessage.trim() || disabled) return;
+        onSubmit(newMessage);
+        setNewMessage('');
+    }
+
     function handleKeyDown(e) {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
-            submitNewMessage(e);
+            handleSubmit();
         }
     }
 
@@ -24,7 +30,7 @@ export default function ChatInput({ submitNewMessage, newMessage = '', setNewMes
             <textarea
                 ref={textareaRef}
                 value={newMessage}
-                onChange={(e) => setNewMessage?.(e.target.value)}
+                onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={handleKeyDown}
                 placeholder="Type a message… (Shift+Enter for new line)"
                 className={styles.input}
@@ -33,7 +39,7 @@ export default function ChatInput({ submitNewMessage, newMessage = '', setNewMes
             />
             <button
                 type="button"
-                onClick={submitNewMessage}
+                onClick={handleSubmit}
                 disabled={disabled || !newMessage.trim()}
                 className={styles.button}
             >
