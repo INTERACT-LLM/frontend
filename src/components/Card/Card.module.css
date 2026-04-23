@@ -15,6 +15,7 @@
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
 
   transition: transform 0.15s ease, box-shadow 0.15s ease;
+  text-align: left;
 }
 
 .card:hover {

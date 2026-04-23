@@ -1,8 +1,9 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import useSWR from "swr";
 import Card from "@/components/Card/Card";
+import LessonModal from "@/components/LessonModal/LessonModal";
 import styles from "./LessonGrid.module.css";
 
 const ENDPOINT = "http://localhost:8000/api/lessons";
@@ -21,6 +22,7 @@ async function fetcher(url) {
 
 export default function LessonGrid() {
   const { data, isLoading, error } = useSWR(ENDPOINT, fetcher);
+  const [selectedLesson, setSelectedLesson] = useState(null);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading lessons.</div>;
@@ -39,7 +41,7 @@ export default function LessonGrid() {
           {data?.lessons.map((lesson) => (
             <Card
               key={lesson.id}
-              href={`/lessons/${lesson.id}`}
+              onClick={() => setSelectedLesson(lesson)}
               title={lesson.ui_title}
               description={lesson.ui_short_description}
             />
@@ -59,6 +61,13 @@ export default function LessonGrid() {
           ))}
         </div>
       </section>
+
+      {selectedLesson && (
+        <LessonModal
+          lesson={selectedLesson}
+          onClose={() => setSelectedLesson(null)}
+        />
+      )}
 
     </div>
   );

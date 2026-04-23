@@ -7,6 +7,7 @@ import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
 import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
 import ProgressBar from '@/components/ProgressBar/ProgressBar';
+import LessonDetailsModal from "@/components/LessonDetailsModal/LessonDetailsModal";
 
 const CHAT_ENDPOINT = 'http://localhost:8000/api/chat';
 const LESSONS_ENDPOINT = 'http://localhost:8000/api/lessons';
@@ -22,9 +23,15 @@ export default function ChatWindow({ lessonId }) {
   const [isLoading, setIsLoading] = React.useState(false);
   const [isComplete, setIsComplete] = React.useState(false);
   const [detailedFeedback, setDetailedFeedback] = React.useState(null);
+  const [showDetails, setShowDetails] = React.useState(false);
 
   const { data: lessonData } = useSWR(
     lessonId ? `${LESSONS_ENDPOINT}/${lessonId}` : null,
+    fetcher
+  );
+
+  const { data: promptsData } = useSWR(
+    lessonId ? `${LESSONS_ENDPOINT}/${lessonId}/prompts` : null,
     fetcher
   );
 
@@ -32,7 +39,6 @@ export default function ChatWindow({ lessonId }) {
   const minTurns = lessonData?.min_turns ?? null;
   const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
   const canEndLesson = minTurns !== null && userTurns >= minTurns;
-
 
   async function fetchChat(userMessage) {
     return fetch(CHAT_ENDPOINT, {
@@ -55,7 +61,7 @@ export default function ChatWindow({ lessonId }) {
     return fetch(DETAILED_FEEDBACK_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: cleanMessages, lesson_id: lessonId}),
+      body: JSON.stringify({ messages: cleanMessages, lesson_id: lessonId }),
     }).then((res) => res.json());
   }
 
@@ -90,26 +96,32 @@ export default function ChatWindow({ lessonId }) {
             <span className={styles.lessonType}>{lessonData.lesson_type}</span>
           )}
         </div>
-        <button
-          className={`${styles.endBtn} ${canEndLesson ? styles.endBtnActive : ''}`}
-          onClick={async () => {
-            setIsComplete(true);
-            try {
-              const response = await fetchDetailedFeedback(messages);
-              setDetailedFeedback(response?.GeneralFeedbackResponse || '');
-            } catch (err) {
-              console.error('detailed feedback error:', err);
+
+        <div className={styles.headerRight}>
+          <button className={styles.detailsBtn} onClick={() => setShowDetails(true)}>
+            See lesson details
+          </button>
+          <button
+            className={`${styles.endBtn} ${canEndLesson ? styles.endBtnActive : ''}`}
+            onClick={async () => {
+              setIsComplete(true);
+              try {
+                const response = await fetchDetailedFeedback(messages);
+                setDetailedFeedback(response?.GeneralFeedbackResponse || '');
+              } catch (err) {
+                console.error('detailed feedback error:', err);
+              }
+            }}
+            disabled={!canEndLesson}
+            title={
+              !canEndLesson && turnsRemaining !== null
+                ? `${turnsRemaining} more turn${turnsRemaining !== 1 ? 's' : ''} needed`
+                : 'End lesson'
             }
-          }}
-          disabled={!canEndLesson}
-          title={
-            !canEndLesson && turnsRemaining !== null
-              ? `${turnsRemaining} more turn${turnsRemaining !== 1 ? 's' : ''} needed`
-              : 'End lesson'
-          }
-        >
-          End lesson
-        </button>
+          >
+            End lesson
+          </button>
+        </div>
       </div>
 
       <div className={styles.messages}>
@@ -120,6 +132,14 @@ export default function ChatWindow({ lessonId }) {
         <ProgressBar userTurns={userTurns} minTurns={minTurns} />
         <ChatInput onSubmit={submitNewMessage} disabled={isLoading} />
       </div>
+
+      {showDetails && lessonData && (
+        <LessonDetailsModal
+          lesson={lessonData}
+          prompts={promptsData}
+          onClose={() => setShowDetails(false)}
+        />
+      )}
     </div>
   );
 }

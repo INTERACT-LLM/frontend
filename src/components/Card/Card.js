@@ -1,11 +1,20 @@
 import Link from "next/link";
 import styles from "./Card.module.css";
 
-export default function Card({ href, title, description }) {
+export default function Card({ href, onClick, title, description }) {
+  if (href) {
+    return (
+      <Link href={href} className={styles.card}>
+        <h2>{title}</h2>
+        <p>{description}</p>
+      </Link>
+    );
+  }
+
   return (
-    <Link href={href} className={styles.card}>
+    <button type="button" onClick={onClick} className={styles.card}>
       <h2>{title}</h2>
       <p>{description}</p>
-    </Link>
+    </button>
   );
 }

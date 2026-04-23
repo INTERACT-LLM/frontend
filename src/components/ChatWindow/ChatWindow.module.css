@@ -29,6 +29,28 @@
   gap: 10px;
 }
 
+.headerRight {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.detailsBtn {
+  padding: 0.4rem 0.85rem;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: transparent;
+  font-size: 0.85rem;
+  color: #555;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+}
+
+.detailsBtn:hover {
+  background: #f5f5f5;
+  color: #111;
+}
+
 .lessonId {
   font-size: 15px;
   font-weight: 500;
