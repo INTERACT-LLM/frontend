@@ -6,7 +6,7 @@ import Card from "@/components/Card/Card";
 import LessonModal from "@/components/LessonModal/LessonModal";
 import styles from "./LessonGrid.module.css";
 
-const ENDPOINT = "http://localhost:8000/api/lessons";
+const LESSONS_ENDPOINT = '/api/lessons';
 
 const UPCOMING = [
   { id: "u1", ui_title: "🍊 At the market", ui_short_description: "Practise numbers, food vocab and haggling." },
@@ -21,7 +21,7 @@ async function fetcher(url) {
 }
 
 export default function LessonGrid() {
-  const { data, isLoading, error } = useSWR(ENDPOINT, fetcher);
+  const { data, isLoading, error } = useSWR(LESSONS_ENDPOINT, fetcher);
   const [selectedLesson, setSelectedLesson] = useState(null);
 
   if (isLoading) return <div>Loading...</div>;

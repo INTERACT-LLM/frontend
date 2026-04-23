@@ -9,10 +9,11 @@ import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
 import ProgressBar from '@/components/ProgressBar/ProgressBar';
 import LessonDetailsModal from "@/components/LessonDetailsModal/LessonDetailsModal";
 
-const CHAT_ENDPOINT = 'http://localhost:8000/api/chat';
-const LESSONS_ENDPOINT = 'http://localhost:8000/api/lessons';
-const FEEDBACK_ENDPOINT = 'http://localhost:8000/api/feedback/immediate';
-const DETAILED_FEEDBACK_ENDPOINT = 'http://localhost:8000/api/feedback/detailed';
+const CHAT_ENDPOINT = '/api/chat';
+const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
+const LESSON_PROMPTS_ENDPOINT = (id) => `/api/lessons/${id}/prompts`;
+const IMMEDIATE_FEEDBACK_ENDPOINT = '/api/feedback/immediate';
+const DETAILED_FEEDBACK_ENDPOINT = '/api/feedback/detailed';
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -26,12 +27,12 @@ export default function ChatWindow({ lessonId }) {
   const [showDetails, setShowDetails] = React.useState(false);
 
   const { data: lessonData } = useSWR(
-    lessonId ? `${LESSONS_ENDPOINT}/${lessonId}` : null,
+    lessonId ? LESSON_ENDPOINT(lessonId) : null,
     fetcher
   );
 
   const { data: promptsData } = useSWR(
-    lessonId ? `${LESSONS_ENDPOINT}/${lessonId}/prompts` : null,
+    lessonId ? LESSON_PROMPTS_ENDPOINT(lessonId) : null,
     fetcher
   );
 
@@ -49,7 +50,7 @@ export default function ChatWindow({ lessonId }) {
   }
 
   async function fetchFeedback(userMessage) {
-    return fetch(FEEDBACK_ENDPOINT, {
+    return fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ last_user_message: userMessage, lesson_id: lessonId }),
