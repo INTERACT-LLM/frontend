@@ -1,44 +1,58 @@
 import React from "react";
 import styles from "./UserModal.module.css";
+import UserFields from "@/components/UserFields/UserFields";
 
-const LANGUAGES = [
-  "English", "Spanish", "French", "German",
-  "Italian", "Portuguese", "Danish", "Swedish", "Norwegian",
-];
-const LEVELS = ["beginner", "intermediate", "advanced"];
+const DEFAULTS = {
+  name: "",
+  proficiency_level: "beginner",
+  preferences: "",
+};
 
 export default function UserModal({ user, onSave, onClose }) {
-  const DEFAULTS = {
-    name: "",
-    nativeLanguage: "English",
-    learningLanguage: "Spanish",
-    level: "beginner",
-  };
-
-  const [form, setForm] = React.useState(user || DEFAULTS);
+  const [form, setForm] = React.useState(DEFAULTS);
   const firstInput = React.useRef(null);
+
   const isNew = !user;
 
+  // sync form when user changes (fixes stale state bug)
+  React.useEffect(() => {
+    setForm(user ?? DEFAULTS);
+  }, [user]);
+
+  // sync focus when modal opens
   React.useEffect(() => {
     firstInput.current?.focus();
   }, []);
 
   function set(field, value) {
-    setForm((f) => ({ ...f, [field]: value }));
+    setForm((prev) => ({ ...prev, [field]: value }));
   }
 
   function handleSave() {
-    if (!form.name.trim()) return;
-    const updated = { ...form, name: form.name.trim() };
+    const name = form.name.trim();
+    if (!name) return;
+
+    const updated = { ...form, name };
+
     localStorage.setItem("interactllm_user", JSON.stringify(updated));
     onSave(updated);
   }
 
+  // sync Escape key handling globally (more reliable)
+  React.useEffect(() => {
+    function handleKey(e) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", handleKey);
+    return () => window.removeEventListener("keydown", handleKey);
+  }, [onClose]);
+
   return (
     <div
       className={styles.overlay}
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-      onKeyDown={(e) => e.key === "Escape" && onClose()}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
       <div className={styles.modal}>
         <div className={styles.header}>
@@ -46,63 +60,17 @@ export default function UserModal({ user, onSave, onClose }) {
             {isNew ? "Welcome — set up your profile" : "Your preferences"}
           </h2>
           <p className={styles.subtitle}>
-            {isNew
-              ? "Saved locally in your browser. You can change this any time."
-              : "Saved locally in your browser."}
+            Saved locally in your browser.
           </p>
         </div>
 
-        <div className={styles.field}>
-          <label className={styles.label}>Your name</label>
-          <input
-            ref={firstInput}
-            type="text"
-            value={form.name}
-            onChange={(e) => set("name", e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && handleSave()}
-            placeholder="e.g. Mina"
-            className={styles.input}
-          />
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Native language</label>
-          <select
-            value={form.nativeLanguage}
-            onChange={(e) => set("nativeLanguage", e.target.value)}
-            className={styles.input}
-          >
-            {LANGUAGES.map((l) => <option key={l}>{l}</option>)}
-          </select>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Learning</label>
-          <select
-            value={form.learningLanguage}
-            onChange={(e) => set("learningLanguage", e.target.value)}
-            className={styles.input}
-          >
-            {LANGUAGES.filter((l) => l !== form.nativeLanguage).map((l) => (
-              <option key={l}>{l}</option>
-            ))}
-          </select>
-        </div>
-
-        <div className={styles.field}>
-          <label className={styles.label}>Level</label>
-          <div className={styles.levelGroup}>
-            {LEVELS.map((lvl) => (
-              <button
-                key={lvl}
-                onClick={() => set("level", lvl)}
-                className={`${styles.levelBtn} ${form.level === lvl ? styles.levelBtnActive : ""}`}
-              >
-                {lvl}
-              </button>
-            ))}
-          </div>
-        </div>
+        <UserFields
+          form={form}
+          set={set}
+          onSubmit={handleSave}
+          nameRef={firstInput}
+          styles={styles}
+        />
 
         <div className={styles.actions}>
           {!isNew && (
@@ -110,6 +78,7 @@ export default function UserModal({ user, onSave, onClose }) {
               Cancel
             </button>
           )}
+
           <button
             onClick={handleSave}
             disabled={!form.name.trim()}
