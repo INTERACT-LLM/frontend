@@ -1,8 +1,11 @@
 .header {  
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   padding: 20px 34px;
   text-align: left;
   color: black;
-  font-size: 28px;
+  font-size: 34px;
   font-weight: 600;
   letter-spacing: 0.2px;
   position: sticky;
