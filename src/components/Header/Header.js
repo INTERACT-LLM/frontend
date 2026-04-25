@@ -1,6 +1,6 @@
 import Link from 'next/link';
-import React from 'react';
 import styles from './Header.module.css';
+import UserMenu from '@/components/UserMenu/UserMenu';
 
 export default function Header() {
   return (
@@ -8,6 +8,7 @@ export default function Header() {
       <h1>
         <Link href="/">InteractLLM</Link>
       </h1>
+      <UserMenu />
     </header>
   );
 }
