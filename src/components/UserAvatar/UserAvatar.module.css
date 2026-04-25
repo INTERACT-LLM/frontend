@@ -69,3 +69,10 @@
 .dropdownEdit:hover {
   text-decoration: underline;
 }
+
+.dropdownEdit:disabled {
+  color: #aaa;
+  cursor: not-allowed;
+  text-decoration: none;
+  font-style: italic;
+}

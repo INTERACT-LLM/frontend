@@ -10,7 +10,7 @@ function initials(name) {
     .slice(0, 2);
 }
 
-export default function UserAvatar({ user, onEditRequest }) {
+export default function UserAvatar({ user, onEditRequest, disabled = false }) {
   const [open, setOpen] = React.useState(false);
   const ref = React.useRef(null);
 
@@ -43,12 +43,17 @@ export default function UserAvatar({ user, onEditRequest }) {
           <div className={styles.dropdownDivider} />
           <button
             className={styles.dropdownEdit}
-            onClick={() => {
-              setOpen(false);
-              onEditRequest();
-            }}
+            onClick={
+              disabled
+                ? undefined
+                : () => {
+                    setOpen(false);
+                    onEditRequest();
+                  }
+            }
+            disabled={disabled}
           >
-            Edit preferences
+            {disabled ? "Cannot edit during lesson" : "Edit preferences"}
           </button>
         </div>
       )}
