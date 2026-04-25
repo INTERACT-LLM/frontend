@@ -1,10 +1,11 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import useSWR from "swr";
 import Card from "@/components/Card/Card";
 import LessonModal from "@/components/LessonModal/LessonModal";
 import styles from "./LessonGrid.module.css";
+import { useUser } from "@/context/UserContext";
 
 const LESSONS_ENDPOINT = '/api/lessons';
 
@@ -26,8 +27,11 @@ async function fetcher(url) {
 }
 
 export default function LessonGrid() {
+  const { user } = useUser();
+  const firstName = user?.name?.split(' ')?.[0] || '';
+
   const { data, isLoading, error } = useSWR(LESSONS_ENDPOINT, fetcher);
-  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [selectedLesson, setSelectedLesson] = React.useState(null);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading lessons.</div>;
@@ -38,7 +42,7 @@ export default function LessonGrid() {
   return (
     <div className={styles.page}>
       <div className={styles.intro}>
-        <h1 className={styles.introTitle}>Ready to learn, Mina?</h1>
+        <h1 className={styles.introTitle}>Ready to learn, {firstName}?</h1>
         <p className={styles.introSub}>Tap on any available lesson to get started.</p>
       </div>
 
