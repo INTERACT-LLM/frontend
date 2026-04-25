@@ -13,8 +13,9 @@ const DEFAULTS = {
   name: "",
   proficiency_level: "beginner",
   preferences: "",
+  nativeLanguage: "English",
+  learningLanguage: "Spanish",
 };
-
 export default function LoginPage() {
   const router = useRouter();
   const [form, setForm] = useState(DEFAULTS);
@@ -23,9 +24,16 @@ export default function LoginPage() {
     setForm((f) => ({ ...f, [field]: value }));
   }
 
-  function handleSubmit() {
+function handleSubmit() {
     if (!form.name.trim()) return;
-    const data = { ...form, name: form.name.trim() };
+    const data = {
+      name: form.name.trim(),
+      proficiency_level: form.proficiency_level,
+      preferences: form.preferences,
+      nativeLanguage: form.nativeLanguage,
+      learningLanguage: form.learningLanguage,
+      language: form.learningLanguage, // what the backend expects
+    };
     localStorage.setItem("interactllm_user", JSON.stringify(data));
     router.push("/");
   }
