@@ -44,7 +44,7 @@ export default function LessonGrid() {
 
       {roleplays.length > 0 && (
         <section className={styles.section}>
-          <div className={styles.sectionLabel}><span>Roleplays</span></div>
+          <div className={`${styles.sectionLabel} ${styles.sectionLabel_roleplay}`}><span>Roleplays</span></div>
           <div className={styles.grid}>
             {roleplays.map((lesson) => (
               <Card
@@ -62,7 +62,7 @@ export default function LessonGrid() {
 
       {games.length > 0 && (
         <section className={styles.section}>
-          <div className={styles.sectionLabel}><span>Vocabulary games</span></div>
+          <div className={`${styles.sectionLabel} ${styles.sectionLabel_game}`}><span>Games</span></div>
           <div className={styles.grid}>
             {games.map((lesson) => (
               <Card

@@ -1,35 +1,47 @@
-/* card */
 .card {
-  width: 100%;
-
-  padding: 20px;
-
-  background: white;
+  background: #fff;
+  border: 0.5px solid #e5e7eb;
   border-radius: 16px;
-
-  text-decoration: none;
-  color: inherit;
-
-  border: 1px solid #e5e7eb;
-
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  padding: 20px 22px;
+  cursor: pointer;
   text-align: left;
+  width: 100%;
+  transition: border-color 0.15s, transform 0.1s;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.12);
+  border-color: #d1d5db;
+  transform: translateY(-1px);
 }
 
 .card h2 {
-  margin: 0 0 8px;
-  font-size: 18px;
+  font-size: 17px;
+  font-weight: 600;  
+  color: #111827;
+  margin: 0;
 }
 
 .card p {
-  margin: 0;
   font-size: 14px;
   color: #6b7280;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.card_roleplay {
+  border-left: 3px solid #AFA9EC;
+}
+
+.card_game {
+  border-left: 3px solid #5DCAA5;
 }

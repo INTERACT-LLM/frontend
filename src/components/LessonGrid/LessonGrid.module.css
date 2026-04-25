@@ -1,25 +1,28 @@
 .page {
-  max-width: 1000px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 48px 40px;
+  padding: 40px 32px;
   display: flex;
   flex-direction: column;
-  gap: 2.5rem;
+  gap: 40px; 
 }
 
 .intro {
-  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
 .introTitle {
-  font-size: 28px;
-  font-weight: 500;
+  font-size: 40px;      
+  font-weight: 600;     
+  letter-spacing: -0.03em;
   color: #111827;
   margin: 0 0 6px;
 }
 
 .introSub {
-  font-size: 15px;
+  font-size: 18px;
   color: #6b7280;
   margin: 0;
 }
@@ -27,56 +30,86 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px; 
 }
 
 .sectionLabel {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
 }
 
 .sectionLabel span {
-  font-size: 12px;
+  font-size: 15px;
   font-weight: 500;
   color: #9ca3af;
   text-transform: uppercase;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.1em;
   white-space: nowrap;
 }
 
-.sectionLabel::after {
-  content: '';
-  flex: 1;
-  height: 0.5px;
-  background: #e5e7eb;
+.sectionLabel_roleplay span {
+  color: #7F77DD;
+}
+
+.sectionLabel_roleplay::after {
+  background: #AFA9EC;
+}
+
+.sectionLabel_game span {
+  color: #1D9E75;
+}
+
+.sectionLabel_game::after {
+  background: #5DCAA5;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 600px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.lockedGrid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+@media (max-width: 600px) {
+  .lockedGrid {
+    grid-template-columns: 1fr;
+  }
 }
 
 .lockedCard {
-  background: #f9fafb;
-  border: 0.5px solid #e5e7eb;
-  border-radius: 12px;
-  padding: 1rem 1.25rem;
-  opacity: 0.55;
+  background: #fafafa;
+  border: 0.5px solid #f0f0f0;
+  border-radius: 16px;
+  padding: 20px 22px;
   cursor: not-allowed;
   user-select: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  color: #999;
 }
 
 .lockedCardTop {
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
-  margin-bottom: 8px;
+  gap: 8px;
 }
 
 .lockedCardTop h2 {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 500;
   color: #374151;
   margin: 0;
@@ -84,18 +117,11 @@
 
 .lockedCard p {
   font-size: 13px;
-  color: #6b7280;
-  margin: 0;
+  color: #9ca3af;
   line-height: 1.5;
+  margin: 0;
 }
 
 .lockIcon {
   font-size: 13px;
-  color: #9ca3af;
-}
-
-.lockedGrid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
 }
