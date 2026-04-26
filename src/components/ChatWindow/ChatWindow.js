@@ -28,6 +28,7 @@ export default function ChatWindow({ lessonId }) {
   const [isComplete, setIsComplete] = React.useState(false);
   const [detailedFeedback, setDetailedFeedback] = React.useState(null);
   const [showDetails, setShowDetails] = React.useState(false);
+  const [gameState, setGameState] = React.useState(null);
 
   const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
@@ -55,10 +56,12 @@ export default function ChatWindow({ lessonId }) {
   
   // if lesson has a game state (like tabu), fetch it to determine what to render 
   // note: (need to define game state in lessons api for coming lessons for this to work beyond tabu)
-  const { data: gameState } = useSWR(
-    lessonData ? GAME_STATE_ENDPOINT(lessonId) : null,
-    (url) => fetch(url).then(res => res.ok ? res.json() : null)
-  );
+  React.useEffect(() => {
+      if (!lessonData) return;
+      fetch(GAME_STATE_ENDPOINT(lessonId))
+        .then(res => res.ok ? res.json() : null)
+        .then(data => setGameState(data));
+    }, [lessonId, lessonData]); // lessonData as dep so it waits for lesson to load, but only fires once since lessonData doesn't change
 
   const tabu = useTabuGame(gameState ?? null);
 

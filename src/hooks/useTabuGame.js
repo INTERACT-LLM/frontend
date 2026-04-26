@@ -1,14 +1,12 @@
-import { useState, useCallback } from 'react';
+import React from 'react';
 
 export function useTabuGame(gameState) {
-  const secret_word = gameState?.secret_word ?? null;
-  const forbidden_words = gameState?.forbidden_words ?? [];
+  const [violations, setViolations] = React.useState([]);
+  const [guessed, setGuessed] = React.useState(false);
+  const [guessNudge, setGuessNudge] = React.useState(false);
 
-  const [violations, setViolations] = useState([]);
-  const [guessed, setGuessed] = useState(false);
-  const [guessNudge, setGuessNudge] = useState(false);
-
-  const checkUserMessage = useCallback((text) => {
+  const checkUserMessage = React.useCallback((text) => {
+    const forbidden_words = gameState?.forbidden_words ?? [];
     if (!forbidden_words.length) return null;
     const lower = text.toLowerCase();
     const hit = forbidden_words.find(w => lower.includes(w.toLowerCase()));
@@ -17,27 +15,28 @@ export function useTabuGame(gameState) {
       return hit;
     }
     return null;
-  }, [forbidden_words]);
+  }, [gameState]);
 
-  const checkLLMResponse = useCallback((text) => {
+  const checkLLMResponse = React.useCallback((text) => {
+    const secret_word = gameState?.secret_word;
     if (!secret_word) return;
     if (text.toLowerCase().includes(secret_word.toLowerCase())) {
       setGuessNudge(true);
     }
-  }, [secret_word]);
+  }, [gameState]);
 
-  const confirmGuess = useCallback(() => {
+  const confirmGuess = React.useCallback(() => {
     setGuessed(true);
     setGuessNudge(false);
   }, []);
 
-  const dismissNudge = useCallback(() => {
+  const dismissNudge = React.useCallback(() => {
     setGuessNudge(false);
   }, []);
 
   return {
-    secretWord: secret_word,
-    forbiddenWords: forbidden_words,
+    secretWord: gameState?.secret_word ?? null,
+    forbiddenWords: gameState?.forbidden_words ?? [],
     violations,
     guessed,
     guessNudge,
