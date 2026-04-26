@@ -2,7 +2,7 @@
 
 import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import styles from "./LessonModal.module.css";
+import styles from "./LessonPreviewModal.module.css";
 
 export default function LessonModal({ lesson, onClose }) {
   const router = useRouter();

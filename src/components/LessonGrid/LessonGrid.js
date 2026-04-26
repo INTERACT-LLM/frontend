@@ -3,7 +3,7 @@
 import React from "react";
 import useSWR from "swr";
 import Card from "@/components/Card/Card";
-import LessonModal from "@/components/LessonModal/LessonModal";
+import LessonModal from "@/components/LessonPreviewModal/LessonPreviewModal";
 import styles from "./LessonGrid.module.css";
 import { useUser } from "@/context/UserContext";
 
