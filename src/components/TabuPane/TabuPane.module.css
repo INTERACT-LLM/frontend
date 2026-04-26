@@ -1,0 +1,156 @@
+.pane {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 220px;
+  flex-shrink: 0;
+  padding: 20px 16px;
+  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  border-radius: 12px;
+  background: var(--color-background-primary, #fff);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  height: fit-content;
+  transition: border-color 0.3s ease;
+}
+
+.paneGuessed {
+  border-color: #0f6e56;
+  background: #f0faf6;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-secondary, #888780);
+}
+
+.secretWord {
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--color-text-primary, #1a1a18);
+  letter-spacing: 0.01em;
+}
+
+.secretWordGuessed {
+  color: #0f6e56;
+}
+
+.divider {
+  height: 0.5px;
+  background: var(--color-border-tertiary, #e5e5e3);
+}
+
+.forbiddenList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.forbiddenWord {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--color-text-primary, #1a1a18);
+  transition: color 0.2s ease;
+}
+
+.violated .wordText {
+  text-decoration: line-through;
+  color: var(--color-text-tertiary, #b4b2a9);
+}
+
+.strikeIcon {
+  font-size: 11px;
+}
+
+.violationCount {
+  font-size: 11px;
+  color: #c0392b;
+  font-weight: 500;
+}
+
+/* Nudge */
+.nudge {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 10px;
+  background: #fffbea;
+  border: 0.5px solid #f0d060;
+  border-radius: 8px;
+}
+
+.nudgeText {
+  font-size: 12px;
+  font-weight: 500;
+  color: #7a6000;
+}
+
+.nudgeButtons {
+  display: flex;
+  gap: 6px;
+}
+
+.confirmBtn, .dismissBtn {
+  flex: 1;
+  padding: 5px 0;
+  border-radius: 6px;
+  font-size: 12px;
+  cursor: pointer;
+  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  background: var(--color-background-secondary, #f4f3ef);
+  transition: background 0.15s;
+}
+
+.confirmBtn:hover {
+  background: #e1f5ee;
+  border-color: #0f6e56;
+  color: #0f6e56;
+}
+
+.dismissBtn:hover {
+  background: #f5f5f5;
+}
+
+/* Manual confirm button */
+.manualConfirm {
+  width: 100%;
+  padding: 8px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  background: var(--color-background-secondary, #f4f3ef);
+  color: var(--color-text-secondary, #888780);
+  transition: all 0.15s ease;
+}
+
+.manualConfirm:hover {
+  background: #e1f5ee;
+  border-color: #0f6e56;
+  color: #0f6e56;
+}
+
+/* Guessed banner */
+.guessedBanner {
+  font-size: 14px;
+  font-weight: 600;
+  color: #0f6e56;
+  text-align: center;
+  padding: 8px;
+  background: #e1f5ee;
+  border-radius: 8px;
+}
