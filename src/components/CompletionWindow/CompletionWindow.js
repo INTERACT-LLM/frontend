@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import styles from './CompletionWindow.module.css';
 import GeneralFeedback from '@/components/GeneralFeedback/GeneralFeedback';
 
-export default function CompletionWindow({ lessonId, userTurns, detailedFeedback }) {
+export default function CompletionWindow({ lessonTitle, userTurns, detailedFeedback }) {
   const router = useRouter();
 
   return (
@@ -13,7 +13,7 @@ export default function CompletionWindow({ lessonId, userTurns, detailedFeedback
       <div className={styles.completionCard}>
 
         <div className={styles.completionBadge}>Complete</div>
-        <h2 className={styles.completionTitle}>{lessonId.toUpperCase()}</h2>
+        <h2 className={styles.completionTitle}>{lessonTitle}</h2>
         <p className={styles.completionStat}>
           {userTurns} turn{userTurns !== 1 ? 's' : ''} completed
         </p>
