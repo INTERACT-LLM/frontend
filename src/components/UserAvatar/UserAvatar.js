@@ -38,7 +38,7 @@ export default function UserAvatar({ user, onEditRequest, disabled = false }) {
         <div className={styles.dropdown}>
           <p className={styles.dropdownName}>{user.name}</p>
           <p className={styles.dropdownMeta}>
-            Learning {user.learningLanguage} · {user.level}
+            Learning {user.learningLanguage} · {user.proficiency_level}
           </p>
           <div className={styles.dropdownDivider} />
           <button
