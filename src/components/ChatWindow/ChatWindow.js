@@ -172,6 +172,7 @@ export default function ChatWindow({ lessonId }) {
           guessNudge={tabu.guessNudge}
           onConfirmGuess={tabu.confirmGuess}
           onDismissNudge={tabu.dismissNudge}
+          hasAssistantResponded={messages.some(m => m.role === 'assistant')}
         />
       )}
     </div>

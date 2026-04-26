@@ -11,6 +11,7 @@ export default function TabuPane({
   guessNudge,
   onConfirmGuess,
   onDismissNudge,
+  hasAssistantResponded, // prop: whether the assistant has made at least one response yet, used to determine when to enable the manual confirm button
 }) {
   if (!secretWord) return null;
 
@@ -61,9 +62,18 @@ export default function TabuPane({
           </div>
         </div>
       ) : (
-        <button className={styles.manualConfirm} onClick={onConfirmGuess}>
-          ✅ Tutor guessed it!
+        <span
+        className={styles.tooltipWrapper}
+        data-tooltip={!hasAssistantResponded ? 'Wait for the tutor to make at least one guess' : 'Press if the tutor guessed correctly'}
+        >
+        <button
+            className={styles.manualConfirm}
+            onClick={onConfirmGuess}
+            disabled={!hasAssistantResponded}
+        >
+            ✅ Tutor guessed it!
         </button>
+        </span>
       )}
     </div>
   );

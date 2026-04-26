@@ -144,6 +144,43 @@
   color: #0f6e56;
 }
 
+.manualConfirm:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+.tooltipWrapper {
+  position: relative;
+  display: block;
+  cursor: not-allowed;
+}
+
+.tooltipWrapper:has(button:not(:disabled)) {
+  cursor: default;
+}
+
+.tooltipWrapper::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  background: #1a1a18;
+  color: #fff;
+  font-size: 11px;
+  padding: 5px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.15s ease;
+}
+
+.tooltipWrapper:hover::after {
+  opacity: 1;
+}
+
 /* Guessed banner */
 .guessedBanner {
   font-size: 14px;
@@ -154,3 +191,4 @@
   background: #e1f5ee;
   border-radius: 8px;
 }
+
