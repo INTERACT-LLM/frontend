@@ -10,10 +10,10 @@ import { useUser } from "@/context/UserContext";
 const LESSONS_ENDPOINT = '/api/lessons';
 
 const UPCOMING = [
-  { id: "u1", ui_title: "🍊 At the market", ui_short_description: "Practise numbers, food vocab and haggling." },
-  { id: "u2", ui_title: "🗺️ Giving directions", ui_short_description: "Navigate streets and landmarks in Spanish." },
-  { id: "u3", ui_title: "📅 Making plans", ui_short_description: "Suggest, accept and decline invitations." },
-  { id: "u4", ui_title: "🏡 Talking about family", ui_short_description: "Describe people and relationships." },
+  { id: "u1", ui_title: "🍊 At the Market", ui_short_description: "Practise numbers, food vocab and haggling." },
+  { id: "u2", ui_title: "🗺️ Giving Directions", ui_short_description: "Navigate streets and landmarks in Spanish." },
+  { id: "u3", ui_title: "📅 Making Plans", ui_short_description: "Suggest, accept and decline invitations." },
+  { id: "u4", ui_title: "🏡 Talking about Family", ui_short_description: "Describe people and relationships." },
 ];
 
 const LESSON_TYPE_LABELS = {
