@@ -62,7 +62,7 @@ export default function ChatWindow({ lessonId }) {
   const userTurns = messages.filter((m) => m.role === 'user').length;
   const minTurns = lessonData?.min_turns ?? null;
   const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
-  const canEndLesson = minTurns !== null && userTurns >= minTurns;
+  const canEndLesson = minTurns !== null && userTurns >= minTurns && !isLoading; // add IsLoading check to prevent ending lesson while waiting for response
 
   async function fetchChat(userMessage) {
     const res = await fetch(CHAT_ENDPOINT, {
@@ -111,14 +111,14 @@ export default function ChatWindow({ lessonId }) {
   }
 
   if (isComplete) {
-    return <CompletionWindow lessonId={lessonId} userTurns={userTurns} detailedFeedback={detailedFeedback} />;
+    return <CompletionWindow lessonTitle={lessonData?.lesson_presentation.ui_title} userTurns={userTurns} detailedFeedback={detailedFeedback} />;
   }
 
   return (
     <div className={styles.pane}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.lessonId}>{lessonId.toUpperCase()}</span>
+          <span className={styles.lessonTitle}>{lessonData?.lesson_presentation.ui_title}</span>
           {lessonData?.lesson_type && (
             <span className={styles.lessonType}>{lessonData.lesson_type}</span>
           )}

@@ -51,8 +51,8 @@
   color: #111;
 }
 
-.lessonId {
-  font-size: 15px;
+.lessonTitle {
+  font-size: 20px;
   font-weight: 500;
   color: var(--color-text-primary, #1a1a18);
   letter-spacing: 0.02em;

@@ -1,19 +1,25 @@
 "use client";
 
-import React, { useState } from "react";
+import React from "react";
 import useSWR from "swr";
 import Card from "@/components/Card/Card";
-import LessonModal from "@/components/LessonModal/LessonModal";
+import LessonModal from "@/components/LessonPreviewModal/LessonPreviewModal";
 import styles from "./LessonGrid.module.css";
+import { useUser } from "@/context/UserContext";
 
 const LESSONS_ENDPOINT = '/api/lessons';
 
 const UPCOMING = [
-  { id: "u1", ui_title: "🍊 At the market", ui_short_description: "Practise numbers, food vocab and haggling." },
-  { id: "u2", ui_title: "🗺️ Giving directions", ui_short_description: "Navigate streets and landmarks in Spanish." },
-  { id: "u3", ui_title: "📅 Making plans", ui_short_description: "Suggest, accept and decline invitations." },
-  { id: "u4", ui_title: "🏡 Talking about family", ui_short_description: "Describe people and relationships." },
+  { id: "u1", ui_title: "🍊 At the Market", ui_short_description: "Practise numbers, food vocab and haggling." },
+  { id: "u2", ui_title: "🗺️ Giving Directions", ui_short_description: "Navigate streets and landmarks in Spanish." },
+  { id: "u3", ui_title: "📅 Making Plans", ui_short_description: "Suggest, accept and decline invitations." },
+  { id: "u4", ui_title: "🏡 Talking about Family", ui_short_description: "Describe people and relationships." },
 ];
+
+const LESSON_TYPE_LABELS = {
+  roleplay: "Roleplay",
+  vocabulary_game: "Game",
+};
 
 async function fetcher(url) {
   const res = await fetch(url);
@@ -21,41 +27,70 @@ async function fetcher(url) {
 }
 
 export default function LessonGrid() {
+  const { user } = useUser();
+  const firstName = user?.name?.split(' ')?.[0] || '';
+
   const { data, isLoading, error } = useSWR(LESSONS_ENDPOINT, fetcher);
-  const [selectedLesson, setSelectedLesson] = useState(null);
+  const [selectedLesson, setSelectedLesson] = React.useState(null);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading lessons.</div>;
 
+  const roleplays = data?.lessons.filter((l) => l.lesson_type === "roleplay") ?? [];
+  const games = data?.lessons.filter((l) => l.lesson_type === "vocabulary_game") ?? [];
+
   return (
     <div className={styles.page}>
-
       <div className={styles.intro}>
-        <h1 className={styles.introTitle}>Ready to learn, Mina?</h1>
+        <h1 className={styles.introTitle}>Ready to learn, {firstName}?</h1>
         <p className={styles.introSub}>Tap on any available lesson to get started.</p>
       </div>
 
-      <section className={styles.section}>
-        <h2 className={styles.sectionHeading}>Available lessons</h2>
-        <div className={styles.grid}>
-          {data?.lessons.map((lesson) => (
-            <Card
-              key={lesson.id}
-              onClick={() => setSelectedLesson(lesson)}
-              title={lesson.ui_title}
-              description={lesson.ui_short_description}
-            />
-          ))}
-        </div>
-      </section>
+      {roleplays.length > 0 && (
+        <section className={styles.section}>
+          <div className={`${styles.sectionLabel} ${styles.sectionLabel_roleplay}`}><span>Roleplays</span></div>
+          <div className={styles.grid}>
+            {roleplays.map((lesson) => (
+              <Card
+                key={lesson.id}
+                onClick={() => setSelectedLesson(lesson)}
+                title={lesson.ui_title}
+                description={lesson.ui_short_description}
+                badge={LESSON_TYPE_LABELS[lesson.lesson_type]}
+                badgeVariant="roleplay"
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {games.length > 0 && (
+        <section className={styles.section}>
+          <div className={`${styles.sectionLabel} ${styles.sectionLabel_game}`}><span>Games</span></div>
+          <div className={styles.grid}>
+            {games.map((lesson) => (
+              <Card
+                key={lesson.id}
+                onClick={() => setSelectedLesson(lesson)}
+                title={lesson.ui_title}
+                description={lesson.ui_short_description}
+                badge={LESSON_TYPE_LABELS[lesson.lesson_type]}
+                badgeVariant="game"
+              />
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className={styles.section}>
-        <h2 className={styles.sectionHeading}>Upcoming lessons</h2>
-        <div className={styles.grid}>
+        <div className={styles.sectionLabel}><span>Coming soon</span></div>
+        <div className={styles.lockedGrid}>
           {UPCOMING.map((lesson) => (
             <div key={lesson.id} className={styles.lockedCard}>
-              <span className={styles.lock}>🔒</span>
-              <h2>{lesson.ui_title}</h2>
+              <div className={styles.lockedCardTop}>
+                <h2>{lesson.ui_title}</h2>
+                <span className={styles.lockIcon}>🔒</span>
+              </div>
               <p>{lesson.ui_short_description}</p>
             </div>
           ))}
@@ -68,7 +103,6 @@ export default function LessonGrid() {
           onClose={() => setSelectedLesson(null)}
         />
       )}
-
     </div>
   );
 }
