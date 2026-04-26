@@ -1,13 +1,16 @@
+/* when no game — full width centered, same as before */
+.solo {
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* when game is active — two column, fixed total width, centered */
 .gameLayout {
   display: flex;
   gap: 16px;
-  max-width: 1200px;
+  max-width: 1100px;
+  width: 100%;
   margin: 0 auto;
   align-items: flex-start;
-}
-
-.gameLayout .pane {
-  flex: 1;
-  max-width: unset;
-  margin: 0;
 }

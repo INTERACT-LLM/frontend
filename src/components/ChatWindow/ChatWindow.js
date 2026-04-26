@@ -142,7 +142,7 @@ export default function ChatWindow({ lessonId }) {
   }
 
   return (
-    <div className={gameState ? styles.gameLayout : undefined}>
+    <div className={gameState ? styles.gameLayout : styles.solo}>
       <ChatPane
         lessonData={lessonData}
         messages={messages}
