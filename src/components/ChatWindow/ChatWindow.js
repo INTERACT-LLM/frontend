@@ -2,13 +2,12 @@
 
 import React from 'react';
 import useSWR from 'swr';
-import styles from './ChatWindow.module.css';
-import ChatMessages from "@/components/ChatMessages/ChatMessages";
-import ChatInput from "@/components/ChatInput/ChatInput";
-import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
-import ProgressBar from '@/components/ProgressBar/ProgressBar';
-import LessonDetailsModal from "@/components/LessonDetailsModal/LessonDetailsModal";
 import { useUser } from "@/context/UserContext";
+import { useTabuGame } from '@/hooks/useTabuGame';
+import ChatPane from '@/components/ChatPane/ChatPane';
+import TabuPane from '@/components/TabuPane/TabuPane';
+import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
+import styles from './ChatWindow.module.css';
 
 const SESSION_ENDPOINT = '/api/session';
 const CHAT_ENDPOINT = '/api/chat';
@@ -16,6 +15,7 @@ const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
 const LESSON_PROMPTS_ENDPOINT = (id, sessionId) => `/api/lessons/${id}/prompts?session_id=${sessionId}`;
 const IMMEDIATE_FEEDBACK_ENDPOINT = '/api/feedback/immediate';
 const DETAILED_FEEDBACK_ENDPOINT = '/api/feedback/detailed';
+const GAME_STATE_ENDPOINT = (id) => `/api/lessons/${id}/game-state`;
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -28,13 +28,10 @@ export default function ChatWindow({ lessonId }) {
   const [isComplete, setIsComplete] = React.useState(false);
   const [detailedFeedback, setDetailedFeedback] = React.useState(null);
   const [showDetails, setShowDetails] = React.useState(false);
+  const [gameState, setGameState] = React.useState(null);
 
-  const { data: lessonData } = useSWR(
-    lessonId ? LESSON_ENDPOINT(lessonId) : null,
-    fetcher
-  );
+  const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
-  // Register session once — key is stable so this fires exactly once
   const { data: sessionData } = useSWR(
     user && lessonId ? [SESSION_ENDPOINT, sessionId] : null,
     ([url]) => fetch(url, {
@@ -52,17 +49,28 @@ export default function ChatWindow({ lessonId }) {
     }).then((res) => res.json())
   );
 
-  const sessionReady = !!sessionData;
-
   const { data: promptsData } = useSWR(
     lessonId && sessionData ? LESSON_PROMPTS_ENDPOINT(lessonId, sessionId) : null,
     fetcher
   );
+  
+  // if lesson has a game state (like tabu), fetch it to determine what to render 
+  // note: (need to define game state in lessons api for coming lessons for this to work beyond tabu)
+  React.useEffect(() => {
+      if (!lessonData) return;
+      fetch(GAME_STATE_ENDPOINT(lessonId))
+        .then(res => res.ok ? res.json() : null)
+        .then(data => setGameState(data));
+    }, [lessonId, lessonData]); // lessonData as dep so it waits for lesson to load, but only fires once since lessonData doesn't change
+
+  const tabu = useTabuGame(gameState ?? null);
 
   const userTurns = messages.filter((m) => m.role === 'user').length;
   const minTurns = lessonData?.min_turns ?? null;
   const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
-  const canEndLesson = minTurns !== null && userTurns >= minTurns && !isLoading; // add IsLoading check to prevent ending lesson while waiting for response
+  const canEndLesson = tabu.guessed || (minTurns !== null && userTurns >= minTurns && !isLoading);
+
+  // --- API calls ---
 
   async function fetchChat(userMessage) {
     const res = await fetch(CHAT_ENDPOINT, {
@@ -70,9 +78,7 @@ export default function ChatWindow({ lessonId }) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ message: userMessage, session_id: sessionId, lesson_id: lessonId }),
     });
-    const data = await res.json();
-    console.log("chat response:", data);
-    return data;
+    return res.json();
   }
 
   async function fetchFeedback(userMessage) {
@@ -92,8 +98,11 @@ export default function ChatWindow({ lessonId }) {
     }).then((res) => res.json());
   }
 
+  // --- Handlers ---
+
   async function submitNewMessage(newMessage) {
     if (!newMessage.trim() || isLoading) return;
+    tabu.checkUserMessage(newMessage);
 
     const userMessage = { role: 'user', content: newMessage };
     setMessages((prev) => [...prev, userMessage]);
@@ -106,67 +115,64 @@ export default function ChatWindow({ lessonId }) {
 
     const messagesShown = chatResponse?.messages?.filter((msg) => msg.role !== 'system') ?? [];
     setMessages(messagesShown);
-    setFeedbacks((prev) => [...prev, { feedback: feedbackResponse?.FeedbackResponse, feedbackStatus: feedbackResponse?.feedback_status }]);
+
+    const lastAssistant = messagesShown.filter(m => m.role === 'assistant').at(-1);
+    if (lastAssistant) tabu.checkLLMResponse(lastAssistant.content);
+
+    setFeedbacks((prev) => [...prev, {
+      feedback: feedbackResponse?.FeedbackResponse,
+      feedbackStatus: feedbackResponse?.feedback_status
+    }]);
     setIsLoading(false);
   }
+
+  async function handleEndLesson() {
+    setIsComplete(true);
+    try {
+      const response = await fetchDetailedFeedback(messages);
+      setDetailedFeedback(response?.GeneralFeedbackResponse || '');
+    } catch (err) {
+      console.error('detailed feedback error:', err);
+    } finally {
+      fetch(`/api/session/${sessionId}`, { method: 'DELETE' });
+    }
+  }
+
+  // --- Render ---
 
   if (isComplete) {
     return <CompletionWindow lessonTitle={lessonData?.lesson_presentation.ui_title} userTurns={userTurns} detailedFeedback={detailedFeedback} />;
   }
 
   return (
-    <div className={styles.pane}>
-      <div className={styles.header}>
-        <div className={styles.headerLeft}>
-          <span className={styles.lessonTitle}>{lessonData?.lesson_presentation.ui_title}</span>
-          {lessonData?.lesson_type && (
-            <span className={styles.lessonType}>{lessonData.lesson_type}</span>
-          )}
-        </div>
-
-        <div className={styles.headerRight}>
-          <button className={styles.detailsBtn} onClick={() => setShowDetails(true)}>
-            See lesson details
-          </button>
-          <button
-            className={`${styles.endBtn} ${canEndLesson ? styles.endBtnActive : ''}`}
-            onClick={async () => {
-              setIsComplete(true);
-              try {
-                const response = await fetchDetailedFeedback(messages);
-                setDetailedFeedback(response?.GeneralFeedbackResponse || '');
-              } catch (err) {
-                console.error('detailed feedback error:', err);
-              } finally {
-                fetch(`/api/session/${sessionId}`, { method: 'DELETE' });
-              }
-            }}
-            disabled={!canEndLesson}
-            title={
-              !canEndLesson && turnsRemaining !== null
-                ? `${turnsRemaining} more turn${turnsRemaining !== 1 ? 's' : ''} needed`
-                : 'End lesson'
-            }
-          >
-            End lesson
-          </button>
-        </div>
-      </div>
-
-      <div className={styles.messages}>
-        <ChatMessages messages={messages} isLoading={isLoading} feedbacks={feedbacks} />
-      </div>
-
-      <div className={styles.footer}>
-        <ProgressBar userTurns={userTurns} minTurns={minTurns} />
-        <ChatInput onSubmit={submitNewMessage} disabled={isLoading || !sessionReady} />
-      </div>
-
-      {showDetails && lessonData && (
-        <LessonDetailsModal
-          lesson={lessonData}
-          prompts={promptsData}
-          onClose={() => setShowDetails(false)}
+    <div className={gameState ? styles.gameLayout : styles.solo}>
+      <ChatPane
+        lessonData={lessonData}
+        messages={messages}
+        feedbacks={feedbacks}
+        isLoading={isLoading}
+        sessionReady={!!sessionData}
+        promptsData={promptsData}
+        showDetails={showDetails}
+        onShowDetails={() => setShowDetails(true)}
+        onCloseDetails={() => setShowDetails(false)}
+        canEndLesson={canEndLesson}
+        turnsRemaining={turnsRemaining}
+        userTurns={userTurns}
+        minTurns={minTurns}
+        onSubmit={submitNewMessage}
+        onEndLesson={handleEndLesson}
+      />
+      {gameState && (
+        <TabuPane
+          secretWord={tabu.secretWord}
+          forbiddenWords={tabu.forbiddenWords}
+          violations={tabu.violations}
+          guessed={tabu.guessed}
+          guessNudge={tabu.guessNudge}
+          onConfirmGuess={tabu.confirmGuess}
+          onDismissNudge={tabu.dismissNudge}
+          hasAssistantResponded={messages.some(m => m.role === 'assistant')}
         />
       )}
     </div>
