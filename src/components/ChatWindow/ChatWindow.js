@@ -4,8 +4,10 @@ import React from 'react';
 import useSWR from 'swr';
 import { useUser } from "@/context/UserContext";
 import { useTabuGame } from '@/hooks/useTabuGame';
+import { useTwentyQGame } from '@/hooks/useTwentyQGame';
 import ChatPane from '@/components/ChatPane/ChatPane';
 import TabuPane from '@/components/TabuPane/TabuPane';
+import TwentyQPane from '@/components/TwentyQPane/TwentyQPane';
 import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
 import styles from './ChatWindow.module.css';
 
@@ -15,7 +17,7 @@ const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
 const LESSON_PROMPTS_ENDPOINT = (id, sessionId) => `/api/lessons/${id}/prompts?session_id=${sessionId}`;
 const IMMEDIATE_FEEDBACK_ENDPOINT = '/api/feedback/immediate';
 const DETAILED_FEEDBACK_ENDPOINT = '/api/feedback/detailed';
-const GAME_STATE_ENDPOINT = (id) => `/api/lessons/${id}/game-state`;
+const GAME_STATE_ENDPOINT = (id, sessionId) => `/api/lessons/${id}/game-state?session_id=${sessionId}`;
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
@@ -53,22 +55,26 @@ export default function ChatWindow({ lessonId }) {
     lessonId && sessionData ? LESSON_PROMPTS_ENDPOINT(lessonId, sessionId) : null,
     fetcher
   );
-  
-  // if lesson has a game state (like tabu), fetch it to determine what to render 
-  // note: (need to define game state in lessons api for coming lessons for this to work beyond tabu)
-  React.useEffect(() => {
-      if (!lessonData) return;
-      fetch(GAME_STATE_ENDPOINT(lessonId))
-        .then(res => res.ok ? res.json() : null)
-        .then(data => setGameState(data));
-    }, [lessonId, lessonData]); // lessonData as dep so it waits for lesson to load, but only fires once since lessonData doesn't change
 
-  const tabu = useTabuGame(gameState ?? null);
+  React.useEffect(() => {
+    if (!lessonData) return;
+    fetch(GAME_STATE_ENDPOINT(lessonId, sessionId))
+      .then(res => res.ok ? res.json() : null)
+      .then(data => setGameState(data));
+  }, [lessonId, lessonData]);
+
+  const tabu = useTabuGame(gameState?.game_type === 'tabu' ? gameState : null);
+  const twentyQ = useTwentyQGame(gameState?.game_type === 'twenty_questions' ? gameState : null);
 
   const userTurns = messages.filter((m) => m.role === 'user').length;
   const minTurns = lessonData?.min_turns ?? null;
   const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
-  const canEndLesson = tabu.guessed || (minTurns !== null && userTurns >= minTurns && !isLoading);
+  const hasAssistantResponded = messages.some(m => m.role === 'assistant');
+
+  const canEndLesson =
+    tabu.guessed ||
+    twentyQ.result !== null ||
+    (minTurns !== null && userTurns >= minTurns && !isLoading);
 
   // --- API calls ---
 
@@ -163,7 +169,7 @@ export default function ChatWindow({ lessonId }) {
         onSubmit={submitNewMessage}
         onEndLesson={handleEndLesson}
       />
-      {gameState && (
+      {gameState?.game_type === 'tabu' && (
         <TabuPane
           secretWord={tabu.secretWord}
           forbiddenWords={tabu.forbiddenWords}
@@ -172,7 +178,19 @@ export default function ChatWindow({ lessonId }) {
           guessNudge={tabu.guessNudge}
           onConfirmGuess={tabu.confirmGuess}
           onDismissNudge={tabu.dismissNudge}
-          hasAssistantResponded={messages.some(m => m.role === 'assistant')}
+          hasAssistantResponded={hasAssistantResponded}
+        />
+      )}
+      {gameState?.game_type === 'twenty_questions' && (
+        <TwentyQPane
+          secretConcept={twentyQ.secretWord}
+          questionCount={userTurns}
+          maxQuestions={twentyQ.maxQuestions}
+          gameOver={userTurns >= twentyQ.maxQuestions}
+          result={twentyQ.result}
+          hasAssistantResponded={hasAssistantResponded}
+          onGuessedIt={twentyQ.confirmGuess}
+          onGaveUp={twentyQ.gaveUp}
         />
       )}
     </div>
