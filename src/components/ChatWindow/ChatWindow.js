@@ -10,8 +10,6 @@ import ChatPane from '@/components/ChatPane/ChatPane';
 import TabuPane from '@/components/TabuPane/TabuPane';
 import TwentyQPane from '@/components/TwentyQPane/TwentyQPane';
 import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
-import ModelSelector from '@/components/ModelSelector/ModelSelector';
-import ModelStatusBanner from '@/components/ModelStatusBanner/ModelStatusBanner';
 import styles from './ChatWindow.module.css';
 
 const SESSION_ENDPOINT = '/api/session';
@@ -173,8 +171,6 @@ export default function ChatWindow({ lessonId }) {
   return (
     <div className={gameState ? styles.gameLayout : styles.solo}>
       <div className={styles.lessonHeader}>
-        <ModelStatusBanner />
-        <ModelSelector />
       </div>
       <ChatPane
         lessonData={lessonData}
