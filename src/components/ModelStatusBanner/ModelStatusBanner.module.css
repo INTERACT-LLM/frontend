@@ -1,0 +1,31 @@
+.banner {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.25rem 0.65rem;
+  border-radius: 999px;
+  background: var(--color-surface-raised, #f4f4f4);
+  border: 1px solid var(--color-border, #e0e0e0);
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot.ollama { background: #4ade80; } /* green */
+.dot.vllm   { background: #60a5fa; } /* blue  */
+
+.text {
+  color: var(--color-text, #111);
+  font-weight: 500;
+}
+
+.provider {
+  color: var(--color-text-muted, #888);
+  font-weight: 400;
+}

@@ -5,10 +5,13 @@ import useSWR from 'swr';
 import { useUser } from "@/context/UserContext";
 import { useTabuGame } from '@/hooks/useTabuGame';
 import { useTwentyQGame } from '@/hooks/useTwentyQGame';
+import { useLLMConfig } from '@/context/LLMConfigContext';
 import ChatPane from '@/components/ChatPane/ChatPane';
 import TabuPane from '@/components/TabuPane/TabuPane';
 import TwentyQPane from '@/components/TwentyQPane/TwentyQPane';
 import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
+import ModelSelector from '@/components/ModelSelector/ModelSelector';
+import ModelStatusBanner from '@/components/ModelStatusBanner/ModelStatusBanner';
 import styles from './ChatWindow.module.css';
 
 const SESSION_ENDPOINT = '/api/session';
@@ -23,6 +26,8 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function ChatWindow({ lessonId }) {
   const { user } = useUser();
+  const { selectedModel } = useLLMConfig();
+
   const [messages, setMessages] = React.useState([]);
   const [sessionId] = React.useState(() => `session-${Date.now()}`);
   const [feedbacks, setFeedbacks] = React.useState([]);
@@ -82,7 +87,12 @@ export default function ChatWindow({ lessonId }) {
     const res = await fetch(CHAT_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: userMessage, session_id: sessionId, lesson_id: lessonId }),
+      body: JSON.stringify({
+        message: userMessage,
+        session_id: sessionId,
+        lesson_id: lessonId,
+        model_id: selectedModel,
+      }),
     });
     return res.json();
   }
@@ -91,7 +101,12 @@ export default function ChatWindow({ lessonId }) {
     return fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ last_user_message: userMessage, lesson_id: lessonId, session_id: sessionId }),
+      body: JSON.stringify({
+        last_user_message: userMessage,
+        lesson_id: lessonId,
+        session_id: sessionId,
+        model_id: selectedModel,
+      }),
     }).then((res) => res.json());
   }
 
@@ -100,7 +115,12 @@ export default function ChatWindow({ lessonId }) {
     return fetch(DETAILED_FEEDBACK_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ messages: cleanMessages, lesson_id: lessonId, session_id: sessionId }),
+      body: JSON.stringify({
+        messages: cleanMessages,
+        lesson_id: lessonId,
+        session_id: sessionId,
+        model_id: selectedModel,
+      }),
     }).then((res) => res.json());
   }
 
@@ -127,7 +147,7 @@ export default function ChatWindow({ lessonId }) {
 
     setFeedbacks((prev) => [...prev, {
       feedback: feedbackResponse?.FeedbackResponse,
-      feedbackStatus: feedbackResponse?.feedback_status
+      feedbackStatus: feedbackResponse?.feedback_status,
     }]);
     setIsLoading(false);
   }
@@ -152,6 +172,10 @@ export default function ChatWindow({ lessonId }) {
 
   return (
     <div className={gameState ? styles.gameLayout : styles.solo}>
+      <div className={styles.lessonHeader}>
+        <ModelStatusBanner />
+        <ModelSelector />
+      </div>
       <ChatPane
         lessonData={lessonData}
         messages={messages}
