@@ -6,6 +6,7 @@ import { useUser } from "@/context/UserContext";
 import { useTabuGame } from '@/hooks/useTabuGame';
 import { useTwentyQGame } from '@/hooks/useTwentyQGame';
 import { useLLMConfig } from '@/context/LLMConfigContext';
+import { useStreamingChat } from '@/hooks/useStreamingChat';
 import ChatPane from '@/components/ChatPane/ChatPane';
 import TabuPane from '@/components/TabuPane/TabuPane';
 import TwentyQPane from '@/components/TwentyQPane/TwentyQPane';
@@ -26,10 +27,9 @@ export default function ChatWindow({ lessonId }) {
   const { user } = useUser();
   const { selectedModel } = useLLMConfig();
 
-  const [messages, setMessages] = React.useState([]);
+  const { messages, setMessages, isLoading, fetchChat } = useStreamingChat(CHAT_ENDPOINT);
   const [sessionId] = React.useState(() => `session-${Date.now()}`);
   const [feedbacks, setFeedbacks] = React.useState([]);
-  const [isLoading, setIsLoading] = React.useState(false);
   const [isComplete, setIsComplete] = React.useState(false);
   const [detailedFeedback, setDetailedFeedback] = React.useState(null);
   const [showDetails, setShowDetails] = React.useState(false);
@@ -81,20 +81,6 @@ export default function ChatWindow({ lessonId }) {
 
   // --- API calls ---
 
-  async function fetchChat(userMessage) {
-    const res = await fetch(CHAT_ENDPOINT, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        message: userMessage,
-        session_id: sessionId,
-        lesson_id: lessonId,
-        model_id: selectedModel,
-      }),
-    });
-    return res.json();
-  }
-
   async function fetchFeedback(userMessage) {
     return fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
       method: 'POST',
@@ -108,8 +94,8 @@ export default function ChatWindow({ lessonId }) {
     }).then((res) => res.json());
   }
 
-  async function fetchDetailedFeedback(messages) {
-    const cleanMessages = messages.map(({ role, content }) => ({ role, content }));
+  async function fetchDetailedFeedback(msgs) {
+    const cleanMessages = msgs.map(({ role, content }) => ({ role, content }));
     return fetch(DETAILED_FEEDBACK_ENDPOINT, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -130,24 +116,18 @@ export default function ChatWindow({ lessonId }) {
 
     const userMessage = { role: 'user', content: newMessage };
     setMessages((prev) => [...prev, userMessage]);
-    setIsLoading(true);
 
-    const [chatResponse, feedbackResponse] = await Promise.all([
-      fetchChat(userMessage),
+    const [assistantContent, feedbackResponse] = await Promise.all([
+      fetchChat(userMessage, sessionId, lessonId, selectedModel),
       fetchFeedback(userMessage),
     ]);
 
-    const messagesShown = chatResponse?.messages?.filter((msg) => msg.role !== 'system') ?? [];
-    setMessages(messagesShown);
-
-    const lastAssistant = messagesShown.filter(m => m.role === 'assistant').at(-1);
-    if (lastAssistant) tabu.checkLLMResponse(lastAssistant.content);
+    if (assistantContent) tabu.checkLLMResponse(assistantContent);
 
     setFeedbacks((prev) => [...prev, {
       feedback: feedbackResponse?.FeedbackResponse,
       feedbackStatus: feedbackResponse?.feedback_status,
     }]);
-    setIsLoading(false);
   }
 
   async function handleEndLesson() {
@@ -170,8 +150,7 @@ export default function ChatWindow({ lessonId }) {
 
   return (
     <div className={gameState ? styles.gameLayout : styles.solo}>
-      <div className={styles.lessonHeader}>
-      </div>
+      <div className={styles.lessonHeader} />
       <ChatPane
         lessonData={lessonData}
         messages={messages}

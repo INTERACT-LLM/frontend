@@ -1,4 +1,3 @@
-import { NextResponse } from "next/server";
 import { endpoints } from "@/lib/api";
 
 export async function POST(request) {
@@ -8,6 +7,12 @@ export async function POST(request) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-  const data = await res.json();
-  return NextResponse.json(data);
+
+  return new Response(res.body, {
+    headers: {
+      "Content-Type": "text/event-stream",
+      "Cache-Control": "no-cache",
+      "X-Accel-Buffering": "no",
+    },
+  });
 }
