@@ -1,16 +1,70 @@
-.header {  
+.header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 20px 34px;
-  text-align: left;
   color: black;
-  font-size: 34px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
   position: sticky;
   top: 0;
   z-index: 10;
+}
+.left {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.left h1 {
+  font-size: 34px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.left h1 a {
+  text-decoration: none;
+  color: inherit;
+}
+
+.divider {
+  width: 0.5px;
+  height: 16px;
+}
+
+.nav {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.navLink {
+  font-size: 17px;
+  font-weight: 500;
+  color: #6b7280;
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.navLink:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.navLinkActive {
+  color: #111827;
+  background: #f3f4f6;
+}
+
+.navLinkFree {
+  color: #1D9E75;
+}
+
+.navLinkFree:hover {
+  background: #f0fdf8;
+  color: #0F6E56;
 }
 
 .controls {

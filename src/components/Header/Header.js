@@ -11,11 +11,28 @@ export default function Header() {
 
   return (
     <header className={styles.header}>
-      <h1>
-        <Link href="/">InteractLLM</Link>
-      </h1>
+      <div className={styles.left}>
+        <h1>
+          <Link href="/">InteractLLM</Link>
+        </h1>
+        <div className={styles.divider} />
+        <nav className={styles.nav}>
+          <Link
+            href="/lessons"
+            className={`${styles.navLink} ${pathname.startsWith('/lessons') || pathname.startsWith('/chat') ? styles.navLinkActive : ''}`}
+          >
+            Lessons
+          </Link>
+          <Link
+            href="/chat/free"
+            className={`${styles.navLink} ${pathname === '/chat/free' ? styles.navLinkActive : styles.navLinkFree}`}
+          >
+            Free Practice
+          </Link>
+        </nav>
+      </div>
       <div className={styles.controls}>
-        {pathname !== '/' && <ModelStatusBanner />}
+        <ModelStatusBanner />
         <UserMenu />
       </div>
     </header>
