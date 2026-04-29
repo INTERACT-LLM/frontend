@@ -23,6 +23,7 @@ export default function ChatPane({
   minTurns,
   onSubmit,
   onEndLesson,
+  streamingContent,
 }) {
   return (
     <div className={styles.pane}>
@@ -54,7 +55,7 @@ export default function ChatPane({
       </div>
 
       <div className={styles.messages}>
-        <ChatMessages messages={messages} isLoading={isLoading} feedbacks={feedbacks} />
+        <ChatMessages messages={messages} isLoading={isLoading} feedbacks={feedbacks} streamingContent={streamingContent} />
       </div>
 
       <div className={styles.footer}>
