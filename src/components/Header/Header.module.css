@@ -8,6 +8,7 @@
   top: 0;
   z-index: 10;
 }
+
 .left {
   display: flex;
   align-items: center;
@@ -30,6 +31,7 @@
 .divider {
   width: 0.5px;
   height: 16px;
+  background: #e5e7eb;
 }
 
 .nav {
@@ -56,15 +58,6 @@
 .navLinkActive {
   color: #111827;
   background: #f3f4f6;
-}
-
-.navLinkFree {
-  color: #1D9E75;
-}
-
-.navLinkFree:hover {
-  background: #f0fdf8;
-  color: #0F6E56;
 }
 
 .controls {
