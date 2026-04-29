@@ -5,14 +5,13 @@ import UserMessage from '@/components/UserMessage/UserMessage';
 
 const isAssistant = (msg) => msg.role === 'assistant';
 
-export default function ChatMessages({ messages, feedbacks, isLoading }) {
+export default function ChatMessages({ messages, feedbacks, isLoading, streamingContent = '' }) {
     const bottomRef = React.useRef(null);
 
     React.useEffect(() => {
         bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
-    }, [messages, isLoading]);
+    }, [messages, isLoading, streamingContent]);
 
-    // pre-map each message index to its feedback
     const feedbackByIndex = React.useMemo(() => {
         const map = {};
         let assistantIdx = 0;
@@ -26,17 +25,24 @@ export default function ChatMessages({ messages, feedbacks, isLoading }) {
 
     return (
         <div className={styles.messages}>
-            {messages.map((msg, i) => (
-                <div key={i} className={isAssistant(msg) ? styles.assistantRow : styles.userRow}>
-                    {isAssistant(msg)
-                        ? <AssistantMessage
-                            content={msg.content}
-                            feedback={feedbackByIndex[i]?.feedback}
-                          />
-                        : <UserMessage content={msg.content} />
-                    }
-                </div>
-            ))}
+            {messages.map((msg, i) => {
+                const isLast = i === messages.length - 1;
+                const isStreaming = isLast && isAssistant(msg) && !!streamingContent;
+                const content = isStreaming ? streamingContent : msg.content;
+
+                return (
+                    <div key={i} className={isAssistant(msg) ? styles.assistantRow : styles.userRow}>
+                        {isAssistant(msg)
+                            ? <AssistantMessage
+                                content={content}
+                                feedback={feedbackByIndex[i]?.feedback}
+                                isStreaming={isStreaming}
+                              />
+                            : <UserMessage content={msg.content} />
+                        }
+                    </div>
+                );
+            })}
 
             {isLoading && (
                 <div className={styles.typingRow}>

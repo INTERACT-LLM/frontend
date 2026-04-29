@@ -27,7 +27,7 @@ export default function ChatWindow({ lessonId }) {
   const { user } = useUser();
   const { selectedModel } = useLLMConfig();
 
-  const { messages, setMessages, isLoading, fetchChat } = useStreamingChat(CHAT_ENDPOINT);
+  const { messages, setMessages, isLoading, streamingContent, fetchChat } = useStreamingChat(CHAT_ENDPOINT);
   const [sessionId] = React.useState(() => `session-${Date.now()}`);
   const [feedbacks, setFeedbacks] = React.useState([]);
   const [isComplete, setIsComplete] = React.useState(false);
@@ -167,6 +167,7 @@ export default function ChatWindow({ lessonId }) {
         minTurns={minTurns}
         onSubmit={submitNewMessage}
         onEndLesson={handleEndLesson}
+        streamingContent={streamingContent}
       />
       {gameState?.game_type === 'tabu' && (
         <TabuPane
