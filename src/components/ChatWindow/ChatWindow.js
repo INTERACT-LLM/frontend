@@ -17,6 +17,7 @@ const SESSION_ENDPOINT = '/api/session';
 const CHAT_ENDPOINT = '/api/chat';
 const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
 const LESSON_PROMPTS_ENDPOINT = (id, sessionId) => `/api/lessons/${id}/prompts?session_id=${sessionId}`;
+const FREE_CHAT_PROMPTS_ENDPOINT = (sessionId) => `/api/chat/free/prompts?session_id=${sessionId}`;
 const IMMEDIATE_FEEDBACK_ENDPOINT = '/api/feedback/immediate';
 const DETAILED_FEEDBACK_ENDPOINT = '/api/feedback/detailed';
 const GAME_STATE_ENDPOINT = (id, sessionId) => `/api/lessons/${id}/game-state?session_id=${sessionId}`;
@@ -38,7 +39,7 @@ export default function ChatWindow({ lessonId }) {
   const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
   const { data: sessionData } = useSWR(
-    user && lessonId ? [SESSION_ENDPOINT, sessionId] : null,
+    user ? [SESSION_ENDPOINT, sessionId] : null,
     ([url]) => fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -59,8 +60,13 @@ export default function ChatWindow({ lessonId }) {
     fetcher
   );
 
+  const { data: freeChatPromptData } = useSWR(
+    !lessonId && sessionData ? FREE_CHAT_PROMPTS_ENDPOINT(sessionId) : null,
+    fetcher
+  );
+
   React.useEffect(() => {
-    if (!lessonData) return;
+    if (!lessonId || !lessonData) return;
     fetch(GAME_STATE_ENDPOINT(lessonId, sessionId))
       .then(res => res.ok ? res.json() : null)
       .then(data => setGameState(data));
@@ -74,12 +80,9 @@ export default function ChatWindow({ lessonId }) {
   const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
   const hasAssistantResponded = messages.some(m => m.role === 'assistant');
 
-  const canEndLesson =
-    tabu.guessed ||
-    twentyQ.result !== null ||
-    (minTurns !== null && userTurns >= minTurns && !isLoading);
-
-  // --- API calls ---
+  const canEndLesson = lessonId
+    ? (tabu.guessed || twentyQ.result !== null || (minTurns !== null && userTurns >= minTurns && !isLoading))
+    : true;
 
   async function fetchFeedback(userMessage) {
     return fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
@@ -108,8 +111,6 @@ export default function ChatWindow({ lessonId }) {
     }).then((res) => res.json());
   }
 
-  // --- Handlers ---
-
   async function submitNewMessage(newMessage) {
     if (!newMessage.trim() || isLoading) return;
     tabu.checkUserMessage(newMessage);
@@ -117,17 +118,20 @@ export default function ChatWindow({ lessonId }) {
     const userMessage = { role: 'user', content: newMessage };
     setMessages((prev) => [...prev, userMessage]);
 
-    const [assistantContent, feedbackResponse] = await Promise.all([
-      fetchChat(userMessage, sessionId, lessonId, selectedModel),
-      fetchFeedback(userMessage),
-    ]);
-
-    if (assistantContent) tabu.checkLLMResponse(assistantContent);
-
-    setFeedbacks((prev) => [...prev, {
-      feedback: feedbackResponse?.FeedbackResponse,
-      feedbackStatus: feedbackResponse?.feedback_status,
-    }]);
+    if (lessonId) {
+      const [assistantContent, feedbackResponse] = await Promise.all([
+        fetchChat(userMessage, sessionId, lessonId, selectedModel),
+        fetchFeedback(userMessage),
+      ]);
+      if (assistantContent) tabu.checkLLMResponse(assistantContent);
+      setFeedbacks((prev) => [...prev, {
+        feedback: feedbackResponse?.FeedbackResponse,
+        feedbackStatus: feedbackResponse?.feedback_status,
+      }]);
+    } else {
+      const assistantContent = await fetchChat(userMessage, sessionId, null, selectedModel);
+      if (assistantContent) tabu.checkLLMResponse(assistantContent);
+    }
   }
 
   async function handleEndLesson() {
@@ -141,8 +145,6 @@ export default function ChatWindow({ lessonId }) {
       fetch(`/api/session/${sessionId}`, { method: 'DELETE' });
     }
   }
-
-  // --- Render ---
 
   if (isComplete) {
     return <CompletionWindow lessonTitle={lessonData?.lesson_presentation.ui_title} userTurns={userTurns} detailedFeedback={detailedFeedback} />;
@@ -168,6 +170,8 @@ export default function ChatWindow({ lessonId }) {
         onSubmit={submitNewMessage}
         onEndLesson={handleEndLesson}
         streamingContent={streamingContent}
+        isFreeChat={!lessonId}
+        freeChatPrompt={freeChatPromptData?.chat_system_prompt}
       />
       {gameState?.game_type === 'tabu' && (
         <TabuPane
