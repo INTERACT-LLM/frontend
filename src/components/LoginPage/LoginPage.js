@@ -63,11 +63,11 @@ export default function LoginPage() {
           <p className={styles.wordmark}>InteractLLM</p>
           <div className={styles.taglineBlock}>
             <h1 className={styles.tagline}>
-              Learn a language.<br />
-              Have a conversation.
+              Language grows<br />
+              from meaningful interactions.
             </h1>
             <p className={styles.taglineSub}>
-              AI-powered lessons built around real scenarios — not textbook drills.
+              Theory-driven. Task-based. AI-assisted.
             </p>
           </div>
           <p className={styles.leftFooter}>
@@ -81,7 +81,7 @@ export default function LoginPage() {
           <div className={styles.formHeader}>
             <h2 className={styles.formTitle}>Set up your profile</h2>
             <p className={styles.formSub}>
-              Takes 20 seconds. Personalises everything.
+              Takes 20 seconds. Personalises your experience.
             </p>
           </div>
 
