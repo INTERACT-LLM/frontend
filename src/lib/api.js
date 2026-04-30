@@ -9,4 +9,5 @@ export const endpoints = {
   feedbackDetailed: `${BASE}/api/feedback/detailed`,
   llmModels: `${BASE}/api/llm/models`,
   llmStatus: `${BASE}/api/llm/status`,
+  freeChatPrompts: `${BASE}/api/chat/free/prompts`,
 };

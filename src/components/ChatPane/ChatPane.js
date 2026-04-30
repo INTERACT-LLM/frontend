@@ -6,6 +6,7 @@ import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
 import ProgressBar from '@/components/ProgressBar/ProgressBar';
 import LessonDetailsModal from "@/components/LessonDetailsModal/LessonDetailsModal";
+import FreeChatModal from "@/components/FreeChatModal/FreeChatModal";
 
 export default function ChatPane({
   lessonData,
@@ -24,20 +25,24 @@ export default function ChatPane({
   onSubmit,
   onEndLesson,
   streamingContent,
+  isFreeChat,
+  freeChatPrompt,
 }) {
   return (
     <div className={styles.pane}>
       <div className={styles.header}>
         <div className={styles.headerLeft}>
-          <span className={styles.lessonTitle}>{lessonData?.lesson_presentation.ui_title}</span>
-          {lessonData?.lesson_type && (
+          <span className={styles.lessonTitle}>
+            {isFreeChat ? 'Free conversation' : lessonData?.lesson_presentation.ui_title}
+          </span>
+          {!isFreeChat && lessonData?.lesson_type && (
             <span className={styles.lessonType}>{lessonData.lesson_type}</span>
           )}
         </div>
 
         <div className={styles.headerRight}>
           <button className={styles.detailsBtn} onClick={onShowDetails}>
-            See lesson details
+            {isFreeChat ? 'About this chat' : 'See lesson details'}
           </button>
           <button
             className={`${styles.endBtn} ${canEndLesson ? styles.endBtnActive : ''}`}
@@ -46,10 +51,10 @@ export default function ChatPane({
             title={
               !canEndLesson && turnsRemaining !== null
                 ? `${turnsRemaining} more turn${turnsRemaining !== 1 ? 's' : ''} needed`
-                : 'End lesson'
+                : isFreeChat ? 'End chat' : 'End lesson'
             }
           >
-            End lesson
+            {isFreeChat ? 'End chat' : 'End lesson'}
           </button>
         </div>
       </div>
@@ -59,14 +64,21 @@ export default function ChatPane({
       </div>
 
       <div className={styles.footer}>
-        <ProgressBar userTurns={userTurns} minTurns={minTurns} />
+        {!isFreeChat && <ProgressBar userTurns={userTurns} minTurns={minTurns} />}
         <ChatInput onSubmit={onSubmit} disabled={isLoading || !sessionReady} />
       </div>
 
-      {showDetails && lessonData && (
+      {showDetails && !isFreeChat && lessonData && (
         <LessonDetailsModal
           lesson={lessonData}
           prompts={promptsData}
+          onClose={onCloseDetails}
+        />
+      )}
+
+      {showDetails && isFreeChat && (
+        <FreeChatModal
+          systemPrompt={freeChatPrompt}
           onClose={onCloseDetails}
         />
       )}

@@ -2,6 +2,7 @@
 
 import React from "react";
 import useSWR from "swr";
+import { useRouter } from "next/navigation";
 import Card from "@/components/Card/Card";
 import LessonModal from "@/components/LessonPreviewModal/LessonPreviewModal";
 import styles from "./LessonGrid.module.css";
@@ -28,6 +29,7 @@ async function fetcher(url) {
 
 export default function LessonGrid() {
   const { user } = useUser();
+  const router = useRouter();
   const firstName = user?.name?.split(' ')?.[0] || '';
 
   const { data, isLoading, error } = useSWR(LESSONS_ENDPOINT, fetcher);
@@ -95,6 +97,24 @@ export default function LessonGrid() {
             </div>
           ))}
         </div>
+      </section>
+
+      {/* Free chat banner */}
+      <section className={styles.section}>
+        <button className={styles.freeChatBanner} onClick={() => router.push('/chat/free')}>
+          <div className={styles.freeChatBannerLeft}>
+            <div className={styles.freeChatIcon}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
+              </svg>
+            </div>
+            <div>
+              <p className={styles.freeChatTitle}>Just want to talk?</p>
+              <p className={styles.freeChatSub}>No lesson, no rules — free conversation practice</p>
+            </div>
+          </div>
+          <span className={styles.freeChatCta}>Try it →</span>
+        </button>
       </section>
 
       {selectedLesson && (
