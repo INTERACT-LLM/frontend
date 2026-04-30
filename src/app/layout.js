@@ -1,5 +1,7 @@
 import { Work_Sans, IBM_Plex_Mono } from 'next/font/google';
 import './globals.css';
+import { ThemeProvider } from '@/components/ThemeProvider/ThemeProvider';
+import { Footer } from '@/components/Footer/Footer';
 
 const workSans = Work_Sans({
   variable: '--font-sans',
@@ -22,9 +24,17 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en" className={`${workSans.variable} ${mono.variable}`}>
+    <html lang="en" suppressHydrationWarning className={`${workSans.variable} ${mono.variable}`}>
       <body className="antialiased">
-        {children}
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="light"
+          enableSystem={false}
+          disableTransitionOnChange
+        >
+          {children}
+          <Footer />
+        </ThemeProvider>
       </body>
     </html>
   );
