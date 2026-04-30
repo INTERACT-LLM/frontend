@@ -53,11 +53,11 @@ export default function UserFields({ form, set, onSubmit, nameRef, children, sty
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Your preferences</label>
+        <label className={styles.label}>Your preferences (custom instructions)</label>
         <textarea
           value={form.preferences}
           onChange={(e) => set("preferences", e.target.value)}
-          placeholder="e.g. I like to small-talk and want to learn about culture. I need Spanish for work."
+          placeholder="e.g. I need Spanish for work, but I also want to learn about the culture for travel in Spain..."
           className={styles.input}
           rows={3}
         />

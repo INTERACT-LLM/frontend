@@ -110,7 +110,7 @@ export default function LessonGrid() {
             </div>
             <div>
               <p className={styles.freeChatTitle}>Just want to talk?</p>
-              <p className={styles.freeChatSub}>No lesson, no rules — free conversation practice</p>
+              <p className={styles.freeChatSub}>No lesson rules or guidance. Just free conversation practice</p>
             </div>
           </div>
           <span className={styles.freeChatCta}>Try it →</span>
