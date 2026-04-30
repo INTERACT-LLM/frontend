@@ -19,7 +19,7 @@
 }
 
 .modal {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 20px;
   width: 100%;
   max-width: 560px;
@@ -49,27 +49,27 @@
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #999;
+  color: var(--color-text-muted);
   margin-bottom: 0.3rem;
 }
 
 .title {
   font-size: 1.4rem;
   font-weight: 700;
-  color: #111;
+  color: var(--color-text-primary);
   margin: 0;
   line-height: 1.2;
 }
 
 .close {
-  background: #f2f2f2;
+  background: var(--color-surface-secondary);
   border: none;
   border-radius: 50%;
   width: 2rem;
   height: 2rem;
   font-size: 0.75rem;
   cursor: pointer;
-  color: #666;
+  color: var(--color-text-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -77,12 +77,15 @@
   transition: background 0.15s, color 0.15s;
 }
 
-.close:hover { background: #e5e5e5; color: #111; }
+.close:hover {
+  background: var(--color-border-hover);
+  color: var(--color-text-primary);
+}
 
 .tabs {
   display: flex;
   padding: 1rem 1.75rem 0;
-  border-bottom: 1px solid #efefef;
+  border-bottom: 1px solid var(--color-border);
   flex-shrink: 0;
 }
 
@@ -93,18 +96,18 @@
   margin-right: 1.5rem;
   font-size: 0.88rem;
   font-weight: 500;
-  color: #999;
+  color: var(--color-text-muted);
   cursor: pointer;
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
   transition: color 0.15s, border-color 0.15s;
 }
 
-.tab:hover { color: #444; }
+.tab:hover { color: var(--color-text-secondary); }
 
 .tabActive {
-  color: #111;
-  border-bottom-color: #1d9e75;
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-brand);
   font-weight: 600;
 }
 
@@ -116,13 +119,13 @@
 
 .scene {
   font-size: 0.95rem;
-  color: #444;
+  color: var(--color-text-secondary);
   line-height: 1.65;
   margin: 0 0 1.1rem;
 }
 
 .goals {
-  background: #f2faf7;
+  background: var(--color-brand-subtle);
   border-radius: 10px;
   padding: 0.75rem 1rem;
   margin-bottom: 1.1rem;
@@ -134,7 +137,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: #1d9e75;
+  color: var(--color-brand);
   margin-bottom: 0.5rem;
 }
 
@@ -148,7 +151,7 @@
 
 .goalsList li {
   font-size: 0.92rem;
-  color: #222;
+  color: var(--color-text-primary);
   line-height: 1.5;
 }
 
@@ -156,8 +159,8 @@
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
-  background: #f2faf7;
-  border: 1px solid #b6e8d7;
+  background: var(--color-brand-subtle);
+  border: 1px solid var(--color-brand-subtle-border);
   border-radius: 10px;
   padding: 0.65rem 1rem;
 }
@@ -167,19 +170,19 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #1d9e75;
+  color: var(--color-brand);
   white-space: nowrap;
 }
 
 .focusValue {
   font-size: 0.95rem;
-  color: #0e4f3a;
+  color: var(--color-brand-deep);
   font-weight: 500;
 }
 
 .transparencyNote {
   font-size: 0.82rem;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0 0 1.1rem;
   line-height: 1.5;
 }
@@ -187,14 +190,14 @@
 .loadingState,
 .errorState {
   font-size: 0.88rem;
-  color: #888;
+  color: var(--color-text-muted);
   padding: 1rem 0;
 }
 
-.errorState { color: #c0392b; }
+.errorState { color: var(--color-error); }
 
 .promptBlock {
-  border: 1px solid #efefef;
+  border: 1px solid var(--color-border);
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 0.75rem;
@@ -206,25 +209,25 @@
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 1rem;
-  background: #fafafa;
+  background: var(--color-surface-secondary);
   border: none;
   cursor: pointer;
   text-align: left;
   transition: background 0.15s;
 }
 
-.promptToggle:hover { background: #f2faf7; }
+.promptToggle:hover { background: var(--color-brand-subtle); }
 
 .promptLabel {
   font-size: 0.82rem;
   font-weight: 600;
-  color: #333;
+  color: var(--color-text-primary);
   letter-spacing: 0.01em;
 }
 
 .promptChevron {
   font-size: 1rem;
-  color: #999;
+  color: var(--color-text-muted);
   transition: transform 0.2s;
   display: inline-block;
 }
@@ -237,9 +240,9 @@
   font-family: "SF Mono", "Fira Code", "Fira Mono", monospace;
   font-size: 0.76rem;
   line-height: 1.65;
-  color: #222;
-  background: #fff;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
   white-space: pre-wrap;
   word-break: break-word;
-  border-top: 1px solid #efefef;
+  border-top: 1px solid var(--color-border);
 }

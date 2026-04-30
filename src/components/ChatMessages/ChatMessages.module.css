@@ -24,8 +24,8 @@
   align-items: center;
   gap: 5px;
   padding: 10px 14px;
-  background: #f4f3ef;
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  background: var(--color-surface-secondary);
+  border: 0.5px solid var(--color-border);
   border-radius: 14px 14px 14px 4px;
 }
 
@@ -33,7 +33,7 @@
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: #888780;
+  background: var(--color-text-muted);
   animation: bounce 1.2s ease-in-out infinite;
 }
 

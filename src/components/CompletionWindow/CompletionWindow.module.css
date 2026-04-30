@@ -1,5 +1,3 @@
-/* CompletionWindow.module.css */
-
 .completionWrapper {
   display: flex;
   align-items: center;
@@ -12,9 +10,9 @@
 .completionCard {
   text-align: center;
   padding: 3rem 2.5rem;
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  border: 0.5px solid var(--color-border);
   border-radius: 12px;
-  background: var(--color-background-primary, #fff);
+  background: var(--color-surface);
   min-width: 320px;
   max-width: 920px;
   width: 100%;
@@ -26,8 +24,8 @@
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #0f6e56;
-  background: #e1f5ee;
+  color: var(--color-brand-hover);
+  background: var(--color-brand-subtle);
   padding: 3px 10px;
   border-radius: 6px;
   margin-bottom: 1.25rem;
@@ -36,24 +34,22 @@
 .completionTitle {
   font-size: 1.4rem;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a18);
+  color: var(--color-text-primary);
   margin: 0 0 0.5rem;
 }
 
 .completionStat {
   font-size: 14px;
-  color: var(--color-text-secondary, #888780);
+  color: var(--color-text-secondary);
   margin: 0 0 2rem;
 }
 
-/* Divider between stat and feedback */
 .divider {
   height: 0.5px;
-  background: var(--color-border-tertiary, #e5e5e3);
+  background: var(--color-border);
   margin: 0 0 1.5rem;
 }
 
-/* Feedback section */
 .feedbackSection {
   text-align: left;
   margin-bottom: 2rem;
@@ -64,7 +60,7 @@
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-text-secondary, #888780);
+  color: var(--color-text-secondary);
   margin: 0 0 0.75rem;
 }
 
@@ -74,13 +70,13 @@
   font-weight: 500;
   padding: 8px 18px;
   border-radius: 8px;
-  border: 0.5px solid var(--color-border-secondary, #d3d1c7);
+  border: 0.5px solid var(--color-border-hover);
   background: transparent;
-  color: var(--color-text-primary, #1a1a18);
+  color: var(--color-text-primary);
   cursor: pointer;
   transition: background 0.15s ease;
 }
 
 .returnButton:hover {
-  background: var(--color-background-secondary, #f4f3ef);
+  background: var(--color-surface-secondary);
 }

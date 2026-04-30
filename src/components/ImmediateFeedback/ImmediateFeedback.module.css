@@ -1,13 +1,13 @@
 .immediateFeedback {
   margin-top: 8px;
   padding-top: 8px;
-  border-top: 0.5px solid rgba(0, 0, 0, 0.08);
+  border-top: 0.5px solid var(--color-border);
 }
 
 .feedbackToggle {
   font-size: 12px;
   font-weight: 500;
-  color: #0f6e56;
+  color: var(--color-brand-hover);
   background: none;
   border: none;
   padding: 0;
@@ -23,9 +23,9 @@
 .feedbackBody {
   margin-top: 8px;
   padding: 10px 12px;
-  border-left: 2px solid #1d9e75;
+  border-left: 2px solid var(--color-brand);
   border-radius: 0 8px 8px 0;
-  background: rgba(29, 158, 117, 0.08);
+  background: var(--color-brand-subtle);
   display: flex;
   flex-direction: column;
   gap: 6px;
@@ -34,13 +34,13 @@
 .feedbackCorrected {
   font-size: 13px;
   font-weight: 500;
-  color: #0f6e56;
+  color: var(--color-brand-hover);
   margin: 0;
 }
 
 .feedbackExplanation {
   font-size: 13px;
-  color: #4a4b57;
+  color: var(--color-text-secondary);
   margin: 0;
   line-height: 1.5;
 }

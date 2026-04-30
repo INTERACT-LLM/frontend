@@ -10,5 +10,5 @@
 .message p + p { margin-top: 0.5em; }
 .message ul, .message ol { margin: 0.4em 0 0 1.2em; padding: 0; }
 .message li { margin-bottom: 2px; }
-.message code { font-size: 0.85em; padding: 1px 4px; border-radius: 4px; background: rgba(0,0,0,0.08); }
+.message code { font-size: 0.85em; padding: 1px 4px; border-radius: 4px; background: var(--color-code-bg); }
 .message pre { margin: 0.5em 0 0; }

@@ -3,7 +3,7 @@
   min-height: 100vh;
 }
 
-/* ── ad panel ── */
+/* ── Left panel ── */
 .left {
   flex: 1;
   background: #0d1f1a;
@@ -13,7 +13,6 @@
   overflow: hidden;
 }
 
-/* radial glow behind the text */
 .left::before {
   content: "";
   position: absolute;
@@ -79,7 +78,7 @@
 .right {
   width: 480px;
   flex-shrink: 0;
-  background: #f7f6f3;
+  background: var(--color-surface-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -98,13 +97,13 @@
 .formTitle {
   font-size: 20px;
   font-weight: 600;
-  color: #111;
+  color: var(--color-text-primary);
   margin: 0 0 6px;
 }
 
 .formSub {
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -122,7 +121,7 @@
   display: block;
   font-size: 12px;
   font-weight: 500;
-  color: #555;
+  color: var(--color-text-secondary);
   margin-bottom: 6px;
   letter-spacing: 0.01em;
 }
@@ -131,10 +130,10 @@
   width: 100%;
   padding: 10px 12px;
   border-radius: 8px;
-  border: 1px solid #e0ddd8;
-  background: #fff;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
   font-size: 14px;
-  color: #111;
+  color: var(--color-text-primary);
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
@@ -143,7 +142,7 @@
 }
 
 .input:focus {
-  border-color: #1D9E75;
+  border-color: var(--color-brand);
 }
 
 .levelGroup {
@@ -155,9 +154,9 @@
   flex: 1;
   padding: 9px 0;
   border-radius: 8px;
-  border: 1px solid #e0ddd8;
-  background: #fff;
-  color: #666;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-family: inherit;
   cursor: pointer;
@@ -166,13 +165,13 @@
 }
 
 .levelBtn:hover {
-  border-color: #1D9E75;
+  border-color: var(--color-brand);
 }
 
 .levelBtnActive {
-  border: 1.5px solid #1D9E75;
-  background: #E1F5EE;
-  color: #0F6E56;
+  border: 1.5px solid var(--color-brand);
+  background: var(--color-brand-subtle);
+  color: var(--color-brand-hover);
   font-weight: 600;
 }
 
@@ -182,7 +181,7 @@
   padding: 12px;
   border-radius: 8px;
   border: none;
-  background: #1D9E75;
+  background: var(--color-brand);
   color: #fff;
   font-size: 15px;
   font-weight: 500;

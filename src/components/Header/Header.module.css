@@ -3,7 +3,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 20px 34px;
-  color: black;
+  color: var(--color-text-primary);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -31,7 +31,7 @@
 .divider {
   width: 0.5px;
   height: 16px;
-  background: #e5e7eb;
+  background: var(--color-border);
 }
 
 .nav {
@@ -43,7 +43,7 @@
 .navLink {
   font-size: 17px;
   font-weight: 500;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   padding: 6px 10px;
   border-radius: 8px;
   text-decoration: none;
@@ -51,13 +51,13 @@
 }
 
 .navLink:hover {
-  background: #f3f4f6;
-  color: #111827;
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
 }
 
 .navLinkActive {
-  color: #111827;
-  background: #f3f4f6;
+  color: var(--color-text-primary);
+  background: var(--color-surface-secondary);
 }
 
 .controls {

@@ -5,17 +5,17 @@
   width: 220px;
   flex-shrink: 0;
   padding: 20px 16px;
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  border: 0.5px solid var(--color-border);
   border-radius: 12px;
-  background: var(--color-background-primary, #fff);
+  background: var(--color-surface);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   height: fit-content;
   transition: border-color 0.3s ease;
 }
 
 .paneGuessed {
-  border-color: #0f6e56;
-  background: #f0faf6;
+  border-color: var(--color-brand-hover);
+  background: var(--color-brand-subtle);
 }
 
 .section {
@@ -29,23 +29,23 @@
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--color-text-secondary, #888780);
+  color: var(--color-text-secondary);
 }
 
 .secretWord {
   font-size: 22px;
   font-weight: 600;
-  color: var(--color-text-primary, #1a1a18);
+  color: var(--color-text-primary);
   letter-spacing: 0.01em;
 }
 
 .secretWordGuessed {
-  color: #0f6e56;
+  color: var(--color-brand-hover);
 }
 
 .divider {
   height: 0.5px;
-  background: var(--color-border-tertiary, #e5e5e3);
+  background: var(--color-border);
 }
 
 .forbiddenList {
@@ -62,13 +62,13 @@
   align-items: center;
   gap: 6px;
   font-size: 13px;
-  color: var(--color-text-primary, #1a1a18);
+  color: var(--color-text-primary);
   transition: color 0.2s ease;
 }
 
 .violated .wordText {
   text-decoration: line-through;
-  color: var(--color-text-tertiary, #b4b2a9);
+  color: var(--color-text-muted);
 }
 
 .strikeIcon {
@@ -77,7 +77,7 @@
 
 .violationCount {
   font-size: 11px;
-  color: #c0392b;
+  color: var(--color-error);
   font-weight: 500;
 }
 
@@ -109,19 +109,19 @@
   border-radius: 6px;
   font-size: 12px;
   cursor: pointer;
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
-  background: var(--color-background-secondary, #f4f3ef);
+  border: 0.5px solid var(--color-border);
+  background: var(--color-surface-secondary);
   transition: background 0.15s;
 }
 
 .confirmBtn:hover {
-  background: #e1f5ee;
-  border-color: #0f6e56;
-  color: #0f6e56;
+  background: var(--color-brand-subtle);
+  border-color: var(--color-brand-hover);
+  color: var(--color-brand-hover);
 }
 
 .dismissBtn:hover {
-  background: #f5f5f5;
+  background: var(--color-surface-secondary);
 }
 
 /* Manual confirm button */
@@ -132,16 +132,16 @@
   font-size: 12px;
   font-weight: 500;
   cursor: pointer;
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
-  background: var(--color-background-secondary, #f4f3ef);
-  color: var(--color-text-secondary, #888780);
+  border: 0.5px solid var(--color-border);
+  background: var(--color-surface-secondary);
+  color: var(--color-text-secondary);
   transition: all 0.15s ease;
 }
 
 .manualConfirm:hover {
-  background: #e1f5ee;
-  border-color: #0f6e56;
-  color: #0f6e56;
+  background: var(--color-brand-subtle);
+  border-color: var(--color-brand-hover);
+  color: var(--color-brand-hover);
 }
 
 .manualConfirm:disabled {
@@ -166,8 +166,8 @@
   bottom: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  background: #1a1a18;
-  color: #fff;
+  background: var(--color-text-primary);
+  color: var(--color-surface);
   font-size: 11px;
   padding: 5px 8px;
   border-radius: 6px;
@@ -185,10 +185,9 @@
 .guessedBanner {
   font-size: 14px;
   font-weight: 600;
-  color: #0f6e56;
+  color: var(--color-brand-hover);
   text-align: center;
   padding: 8px;
-  background: #e1f5ee;
+  background: var(--color-brand-subtle);
   border-radius: 8px;
 }
-

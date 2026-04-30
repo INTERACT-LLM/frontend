@@ -9,8 +9,8 @@
   display: inline-block;
   width: 12px;
   height: 12px;
-  border: 1.5px solid var(--color-border-tertiary, #e5e5e3);
-  border-top-color: #1d9e75;
+  border: 1.5px solid var(--color-border);
+  border-top-color: var(--color-brand);
   border-radius: 50%;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
@@ -22,7 +22,7 @@
 
 .loadingText {
   font-size: 13px;
-  color: var(--color-text-secondary, #888780);
+  color: var(--color-text-secondary);
 }
 
 /* ── Wrapper ───────────────────────────────────────── */
@@ -39,13 +39,13 @@
 }
 
 .positive {
-  background: #f0faf6;
-  border: 1px solid #c3e8d8;
+  background: var(--color-brand-subtle);
+  border: 1px solid var(--color-brand-subtle-border);
 }
 
 .improvements {
-  background: #fdf8f0;
-  border: 1px solid #e8dcc3;
+  background: var(--color-warning-subtle);
+  border: 1px solid var(--color-warning-border);
 }
 
 /* ── Section heading ───────────────────────────────── */
@@ -63,11 +63,11 @@
 }
 
 .positive .sectionIcon {
-  color: #1d9e75;
+  color: var(--color-brand);
 }
 
 .improvements .sectionIcon {
-  color: #c98a2e;
+  color: var(--color-warning);
 }
 
 .sectionTitle {
@@ -79,11 +79,11 @@
 }
 
 .positive .sectionTitle {
-  color: #1a7a5a;
+  color: var(--color-brand-hover);
 }
 
 .improvements .sectionTitle {
-  color: #9a6620;
+  color: var(--color-warning-dark);
 }
 
 /* ── List ──────────────────────────────────────────── */
@@ -102,7 +102,7 @@
   gap: 0.6rem;
   font-size: 14px;
   line-height: 1.6;
-  color: var(--color-text-primary, #1a1a18);
+  color: var(--color-text-primary);
 }
 
 .dot {
@@ -115,19 +115,19 @@
 }
 
 .positive .dot {
-  background: #1d9e75;
+  background: var(--color-brand);
 }
 
 .improvements .dot {
-  background: #c98a2e;
+  background: var(--color-warning);
 }
 
 /* ── target language text highlight ────────────────────────── */
 :global(.targetLang) {
   font-style: normal;
   font-weight: 500;
-  background: rgba(29, 158, 117, 0.1);
-  color: #1a7a5a;
+  background: var(--color-brand-subtle);
+  color: var(--color-brand-hover);
   border-radius: 3px;
   padding: 0 3px;
 }
