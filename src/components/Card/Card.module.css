@@ -9,7 +9,7 @@
   transition: border-color 0.15s, transform 0.1s;
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 10px;
 }
 
 .card:hover {

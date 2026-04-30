@@ -30,13 +30,13 @@
 .section {
   display: flex;
   flex-direction: column;
-  gap: 12px; 
+  gap: 16px; 
 }
 
 .sectionLabel {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
 }
 
 .sectionLabel span {
@@ -147,7 +147,7 @@
 .freeChatBannerLeft {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .freeChatIcon {
@@ -175,7 +175,7 @@
 }
 
 .freeChatCta {
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 500;
   color: #1D9E75;
   white-space: nowrap;
