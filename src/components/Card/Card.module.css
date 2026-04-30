@@ -1,6 +1,6 @@
 .card {
-  background: #fff;
-  border: 0.5px solid #e5e7eb;
+  background: var(--color-surface);
+  border: 0.5px solid var(--color-border);
   border-radius: 16px;
   padding: 20px 22px;
   cursor: pointer;
@@ -13,20 +13,20 @@
 }
 
 .card:hover {
-  border-color: #d1d5db;
+  border-color: var(--color-border-hover);
   transform: translateY(-1px);
 }
 
 .card h2 {
   font-size: 17px;
   font-weight: 600;  
-  color: #111827;
+  color: var(--color-text-primary);
   margin: 0;
 }
 
 .card p {
   font-size: 14px;
-  color: #6b7280;
+  color: var(--color-text-secondary);
   line-height: 1.55;
   margin: 0;
 }
@@ -39,9 +39,9 @@
 }
 
 .card_roleplay {
-  border-left: 3px solid #AFA9EC;
+  border-left: 3px solid var(--color-accent-roleplay);
 }
 
 .card_game {
-  border-left: 3px solid #5DCAA5;
+  border-left: 3px solid var(--color-accent-game);
 }

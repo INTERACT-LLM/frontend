@@ -10,7 +10,7 @@
 }
 
 .modal {
-  background: #fff;
+  background: var(--color-surface);
   border-radius: 16px;
   padding: 28px;
   width: 100%;
@@ -25,13 +25,13 @@
 .title {
   font-size: 17px;
   font-weight: 600;
-  color: #111;
+  color: var(--color-text-primary);
   margin: 0 0 4px;
 }
 
 .subtitle {
   font-size: 13px;
-  color: #888;
+  color: var(--color-text-muted);
   margin: 0;
 }
 
@@ -47,7 +47,7 @@
   display: block;
   font-size: 12px;
   font-weight: 500;
-  color: #666;
+  color: var(--color-text-secondary);
   margin-bottom: 6px;
 }
 
@@ -55,10 +55,10 @@
   width: 100%;
   padding: 9px 12px;
   border-radius: 8px;
-  border: 1px solid #e5e5e5;
+  border: 1px solid var(--color-border);
   font-size: 14px;
-  color: #111;
-  background: #fff;
+  color: var(--color-text-primary);
+  background: var(--color-surface);
   font-family: inherit;
   outline: none;
   box-sizing: border-box;
@@ -66,7 +66,7 @@
 }
 
 .input:focus {
-  border-color: #1D9E75;
+  border-color: var(--color-brand);
 }
 
 .levelGroup {
@@ -78,9 +78,9 @@
   flex: 1;
   padding: 8px 0;
   border-radius: 8px;
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  color: #555;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   font-size: 13px;
   font-weight: 400;
   cursor: pointer;
@@ -90,13 +90,13 @@
 }
 
 .levelBtn:hover {
-  border-color: #1D9E75;
+  border-color: var(--color-brand);
 }
 
 .levelBtnActive {
-  border: 1.5px solid #1D9E75;
-  background: #E1F5EE;
-  color: #0F6E56;
+  border: 1.5px solid var(--color-brand);
+  background: var(--color-brand-subtle);
+  color: var(--color-brand-hover);
   font-weight: 600;
 }
 
@@ -111,7 +111,7 @@
   padding: 10px;
   border-radius: 8px;
   border: none;
-  background: #1D9E75;
+  background: var(--color-brand);
   color: #fff;
   font-size: 14px;
   font-weight: 500;
@@ -132,9 +132,9 @@
 .btnSecondary {
   padding: 10px 16px;
   border-radius: 8px;
-  border: 1px solid #e5e5e5;
-  background: #fff;
-  color: #555;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface);
+  color: var(--color-text-secondary);
   font-size: 14px;
   cursor: pointer;
   font-family: inherit;
@@ -142,5 +142,5 @@
 }
 
 .btnSecondary:hover {
-  border-color: #ccc;
+  border-color: var(--color-border-hover);
 }

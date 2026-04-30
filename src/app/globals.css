@@ -1,8 +1,69 @@
 @import 'tailwindcss';
 
+@variant dark (:is(.dark *));
+
 :root {
-  --background: #f6f7fb;;
+  --background: #f6f7fb;
   --foreground: #171717;
+  --color-text-primary: #111827;
+  --color-text-secondary: #4b5563;
+  --color-text-muted: #9ca3af;
+  --color-surface: #ffffff;
+  --color-border: #e5e7eb;
+  --color-border-hover: #d1d5db;
+
+  /* Brand */
+  --color-brand: #1d9e75;
+  --color-accent-roleplay: #AFA9EC;
+  --color-accent-game: #5DCAA5;
+  --color-surface-secondary: #f4f3ef;
+  --color-brand-hover: #0f6e56;
+  --color-code-bg: rgba(0, 0, 0, 0.08);
+  --color-brand-subtle: #e1f5ee;
+  --color-brand-subtle-border: #b6e8d7;
+  --color-brand-subtle-hover: #e1f5ee;
+  --color-brand-deep: #0e4f3a;
+  --color-error: #c0392b;
+  --color-error-subtle: #FAECE7;
+  --color-accent-roleplay-subtle: #f7f5ff;
+  --color-accent-roleplay-border: #e0d9ff;
+  --color-accent-roleplay-deep: #3d2f7a;
+  --color-warning: #c98a2e;
+  --color-warning-dark: #9a6620;
+  --color-warning-subtle: #fdf8f0;
+  --color-warning-border: #e8dcc3;
+}
+
+.dark {
+  --background: #0a0a0a;
+  --foreground: #f6f7fb;
+  --color-text-primary: #f9fafb;
+  --color-text-secondary: #9ca3af;
+  --color-text-muted: #6b7280;
+  --color-surface: #1a1a1a;
+  --color-border: #2d2d2d;
+  --color-border-hover: #404040;
+
+  /* Brand */
+  --color-brand: #1d9e75;
+  --color-accent-roleplay: #AFA9EC;
+  --color-accent-game: #5DCAA5;
+  --color-surface-secondary: #262626;
+  --color-brand-hover: #0f6e56;
+  --color-code-bg: rgba(255, 255, 255, 0.12);
+  --color-brand-subtle: #0d2a20;
+  --color-brand-subtle-border: #1a4a38;
+  --color-brand-subtle-hover: #0d2a20;
+  --color-brand-deep: #4db896;
+  --color-error: #e74c3c;
+  --color-error-subtle: #2a1210;
+  --color-accent-roleplay-subtle: #1e1a2e;
+  --color-accent-roleplay-border: #3d3560;
+  --color-accent-roleplay-deep: #b8a9f0;
+  --color-warning: #e6a23c;
+  --color-warning-dark: #f0c070;
+  --color-warning-subtle: #2a1f0a;
+  --color-warning-border: #4a3510;
 }
 
 @theme inline {
@@ -10,13 +71,6 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-mono);
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #f6f7fb;;
-  }
 }
 
 body {

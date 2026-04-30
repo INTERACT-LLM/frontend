@@ -1,41 +1,39 @@
 .wrapper {
   min-height: 80vh;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-
   gap: 16px;
   padding: 40px;
 }
 
 .greeting {
   font-size: 26px;
-  color: #9ca3af;
+  color: var(--color-text-muted);
 }
 
 .title {
   font-size: 50px;
   font-weight: 600;
-  color: #111827;
+  color: var(--color-text-primary);
   text-align: center;
 }
 
 .accent {
-  color: #1d9e75;
+   color: var(--color-brand);
 }
 
 .subtitle {
   font-size: 20px;
-  color: #4b5563;
+  color: var(--color-text-secondary);
   max-width: 600px;
   text-align: center;
 }
 
 .cta {
   display: inline-block;
-  background: #1d9e75; /* used to be #7c3aed = purple; might switch back later */
+  background: var(--color-brand);
   color: #fff;
   font-size: 16px;
   font-weight: 500;

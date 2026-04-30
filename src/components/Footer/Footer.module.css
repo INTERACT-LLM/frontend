@@ -1,0 +1,30 @@
+.footer {
+  position: fixed;
+  bottom: 1rem;
+  right: 1rem;
+  z-index: 50;
+}
+
+.toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 8px;
+  border: 0.5px solid var(--color-border);
+  background: var(--color-surface);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.toggle:hover {
+  background: var(--color-surface-secondary);
+  border-color: var(--color-border-hover);
+}
+
+.icon {
+  width: 1.1rem;
+  height: 1.1rem;
+  color: var(--color-text-secondary);
+}

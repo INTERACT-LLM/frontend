@@ -1,6 +1,6 @@
 .message {
   align-self: flex-end;
-  background: #1d9e75;
+  background: var(--color-brand);
   color: #fff;
   border-radius: 14px 14px 4px 14px;
 }

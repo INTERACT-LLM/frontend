@@ -3,14 +3,13 @@
   display: flex;
   flex-direction: column;
   height: calc(100vh - 6rem);
-  width: 100%;       /* fill the flex parent */
-  flex: 1;           /* grow to fill gameLayout */
-  min-width: 0;      /* prevent flex blowout */
-  /* remove max-width and margin: 0 auto */
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+  border: 0.5px solid var(--color-border);
   border-radius: 12px;
   overflow: hidden;
-  background: var(--color-background-primary, #fff);
+  background: var(--color-surface);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
@@ -20,7 +19,7 @@
   align-items: center;
   justify-content: space-between;
   padding: 14px 20px;
-  border-bottom: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  border-bottom: 0.5px solid var(--color-border);
   flex-shrink: 0;
 }
 
@@ -39,30 +38,30 @@
 .detailsBtn {
   padding: 0.4rem 0.85rem;
   border-radius: 8px;
-  border: 1px solid #e0e0e0;
+  border: 1px solid var(--color-border);
   background: transparent;
   font-size: 0.85rem;
-  color: #555;
+  color: var(--color-text-secondary);
   cursor: pointer;
   transition: background 0.15s, color 0.15s;
 }
 
 .detailsBtn:hover {
-  background: #f5f5f5;
-  color: #111;
+  background: var(--color-surface-secondary);
+  color: var(--color-text-primary);
 }
 
 .lessonTitle {
   font-size: 20px;
   font-weight: 500;
-  color: var(--color-text-primary, #1a1a18);
+  color: var(--color-text-primary);
   letter-spacing: 0.02em;
 }
 
 .lessonType {
   font-size: 12px;
-  color: var(--color-text-secondary, #888780);
-  background: var(--color-background-secondary, #f4f3ef);
+  color: var(--color-text-secondary);
+  background: var(--color-surface-secondary);
   padding: 2px 8px;
   border-radius: 6px;
 }
@@ -74,21 +73,21 @@
   padding: 6px 14px;
   border-radius: 8px;
   cursor: not-allowed;
-  border: 0.5px solid var(--color-border-tertiary, #e5e5e3);
-  color: var(--color-text-tertiary, #b4b2a9);
-  background: var(--color-background-secondary, #f4f3ef);
+  border: 0.5px solid var(--color-border);
+  color: var(--color-text-muted);
+  background: var(--color-surface-secondary);
   transition: all 0.15s ease;
 }
 
 .endBtnActive {
-  border-color: #0f6e56;
-  color: #0f6e56;
+  border-color: var(--color-brand-hover);
+  color: var(--color-brand-hover);
   cursor: pointer;
-  background: #e1f5ee;
+  background: var(--color-brand-subtle);
 }
 
 .endBtnActive:hover {
-  background: #0f6e56;
+  background: var(--color-brand-hover);
   color: #fff;
 }
 
@@ -103,7 +102,7 @@
 /* Footer */
 .footer {
   padding: 12px 16px 16px;
-  border-top: 0.5px solid var(--color-border-tertiary, #e5e5e3);
+  border-top: 0.5px solid var(--color-border);
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
