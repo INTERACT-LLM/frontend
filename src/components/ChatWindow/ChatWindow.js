@@ -51,10 +51,12 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         const userMessage = { role: 'user', content: newMessage };
         setMessages(prev => [...prev, userMessage]);
 
-        const assistantContent = await sendMessage(userMessage, chatId, selectedModel);
-        if (assistantContent) tabu.checkLLMResponse(assistantContent);
+        const [assistantContent] = await Promise.all([
+            sendMessage(userMessage, chatId, selectedModel),
+            lessonId ? addFeedback(userMessage) : Promise.resolve(),
+        ]);
 
-        if (lessonId) await addFeedback(userMessage);
+        if (assistantContent) tabu.checkLLMResponse(assistantContent);
     }
     
     async function handleEndLesson() {
