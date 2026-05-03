@@ -6,7 +6,7 @@ import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
 import ProgressBar from '@/components/ProgressBar/ProgressBar';
 import LessonDetailsModal from "@/components/LessonDetailsModal/LessonDetailsModal";
-import FreeChatModal from "@/components/FreeChatModal/FreeChatModal";
+import FreeChatDetailsModal from "@/components/FreeChatDetailsModal/FreeChatDetailsModal";
 
 export default function ChatPane({
   lessonData,
@@ -77,7 +77,7 @@ export default function ChatPane({
       )}
 
       {showDetails && isFreeChat && (
-        <FreeChatModal
+        <FreeChatDetailsModal
           systemPrompt={freeChatPrompt}
           onClose={onCloseDetails}
         />
