@@ -14,10 +14,17 @@ export default function ChatMessages({ messages, feedbacks, isLoading, streaming
 
     const feedbackByIndex = React.useMemo(() => {
         const map = {};
-        let assistantIdx = 0;
+        let userIdx = 0;
         messages.forEach((msg, i) => {
-            if (msg.role === 'assistant') {
-                map[i] = feedbacks[assistantIdx++];
+            if (msg.role === 'user') {
+                // find the assistant message that follows this user message
+                const nextAssistantIdx = messages.findIndex(
+                    (m, j) => j > i && m.role === 'assistant'
+                );
+                if (nextAssistantIdx !== -1) {
+                    map[nextAssistantIdx] = feedbacks[userIdx];
+                }
+                userIdx++;
             }
         });
         return map;

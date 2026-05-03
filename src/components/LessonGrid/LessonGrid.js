@@ -2,9 +2,9 @@
 
 import React from "react";
 import useSWR from "swr";
-import { useRouter } from "next/navigation";
 import Card from "@/components/Card/Card";
-import LessonModal from "@/components/LessonPreviewModal/LessonPreviewModal";
+import LessonPreviewModal from "@/components/LessonPreviewModal/LessonPreviewModal";
+import FreeChatPreviewModal from "@/components/FreeChatPreviewModal/FreeChatPreviewModal";
 import styles from "./LessonGrid.module.css";
 import { useUser } from "@/context/UserContext";
 
@@ -29,11 +29,10 @@ async function fetcher(url) {
 
 export default function LessonGrid() {
   const { user } = useUser();
-  const router = useRouter();
   const firstName = user?.name?.split(' ')?.[0] || '';
 
   const { data, isLoading, error } = useSWR(LESSONS_ENDPOINT, fetcher);
-  const [selectedLesson, setSelectedLesson] = React.useState(null);
+  const [activeModal, setActiveModal] = React.useState(null);
 
   if (isLoading) return <div>Loading...</div>;
   if (error) return <div>Error loading lessons.</div>;
@@ -55,7 +54,7 @@ export default function LessonGrid() {
             {roleplays.map((lesson) => (
               <Card
                 key={lesson.id}
-                onClick={() => setSelectedLesson(lesson)}
+                onClick={() => setActiveModal({ type: 'lesson', lesson })}
                 title={lesson.ui_title}
                 description={lesson.ui_short_description}
                 badge={LESSON_TYPE_LABELS[lesson.lesson_type]}
@@ -73,7 +72,7 @@ export default function LessonGrid() {
             {games.map((lesson) => (
               <Card
                 key={lesson.id}
-                onClick={() => setSelectedLesson(lesson)}
+                onClick={() => setActiveModal({ type: 'lesson', lesson })}
                 title={lesson.ui_title}
                 description={lesson.ui_short_description}
                 badge={LESSON_TYPE_LABELS[lesson.lesson_type]}
@@ -99,9 +98,8 @@ export default function LessonGrid() {
         </div>
       </section>
 
-      {/* Free chat banner */}
       <section className={styles.section}>
-        <button className={styles.freeChatBanner} onClick={() => router.push('/chat/free')}>
+        <button className={styles.freeChatBanner} onClick={() => setActiveModal({ type: 'freeChat' })}>
           <div className={styles.freeChatBannerLeft}>
             <div className={styles.freeChatIcon}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1D9E75" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -117,10 +115,16 @@ export default function LessonGrid() {
         </button>
       </section>
 
-      {selectedLesson && (
-        <LessonModal
-          lesson={selectedLesson}
-          onClose={() => setSelectedLesson(null)}
+      {activeModal?.type === 'lesson' && (
+        <LessonPreviewModal
+          lesson={activeModal.lesson}
+          onClose={() => setActiveModal(null)}
+        />
+      )}
+
+      {activeModal?.type === 'freeChat' && (
+        <FreeChatPreviewModal
+          onClose={() => setActiveModal(null)}
         />
       )}
     </div>

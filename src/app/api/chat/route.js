@@ -1,3 +1,4 @@
+/* create chat */
 import { endpoints } from "@/lib/api";
 
 export async function POST(request) {
@@ -7,12 +8,6 @@ export async function POST(request) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
-
-  return new Response(res.body, {
-    headers: {
-      "Content-Type": "text/event-stream",
-      "Cache-Control": "no-cache",
-      "X-Accel-Buffering": "no",
-    },
-  });
+  const data = await res.json();
+  return Response.json(data);
 }

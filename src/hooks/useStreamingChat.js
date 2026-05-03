@@ -1,6 +1,9 @@
 import React from 'react';
 
-export function useStreamingChat(chatEndpoint) {
+const CHAT_MESSAGE_ENDPOINT = '/api/chat/message';
+const CHAT_START_ENDPOINT = '/api/chat/start';
+
+export function useStreamingChat() {
     const [messages, setMessages] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [streamingContent, setStreamingContent] = React.useState('');
@@ -18,7 +21,7 @@ export function useStreamingChat(chatEndpoint) {
         if (typewriterInterval.current) return;
         typewriterInterval.current = setInterval(() => {
             if (typewriterQueue.current.length === 0) return;
-            const token = typewriterQueue.current.shift(); // 1 token at a time
+            const token = typewriterQueue.current.shift();
             setStreamingContent((prev) => prev + token);
         }, TYPEWRITER_SPEED_MS);
     }
@@ -30,30 +33,32 @@ export function useStreamingChat(chatEndpoint) {
         }
     }
 
-    async function fetchChat(userMessage, sessionId, lessonId, selectedModel) {
+    // internal helper — handles any SSE endpoint
+    async function fetchStream(endpoint, body, addUserMessage = false) {
         setIsLoading(true);
         setStreamingContent('');
         streamingContentRef.current = '';
         typewriterQueue.current = [];
 
-        const response = await fetch(chatEndpoint, {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                message: userMessage,
-                session_id: sessionId,
-                lesson_id: lessonId,
-                model_id: selectedModel,
-            }),
+            body: JSON.stringify(body),
         });
 
-        setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+        if (addUserMessage) {
+            setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+        } else {
+            setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+        }
+
         setIsLoading(false);
         startTypewriter();
 
         const reader = response.body.getReader();
         const decoder = new TextDecoder();
         let buffer = '';
+        const collected = [];
 
         while (true) {
             const { done, value } = await reader.read();
@@ -66,34 +71,53 @@ export function useStreamingChat(chatEndpoint) {
             for (const line of lines) {
                 if (!line.startsWith('data: ')) continue;
                 const token = line.slice(6);
-                if (token === '[DONE]') break;
+                if (token === '[DONE]') continue;
+
+                collected.push(token);
                 typewriterQueue.current.push(token);
             }
         }
 
-        // Wait for queue to drain AND the ref to catch up with the last setState
+        // Wait for typewriter to drain
         await new Promise((resolve) => {
             const check = setInterval(() => {
                 if (typewriterQueue.current.length === 0) {
                     clearInterval(check);
-                    // Extra tick to let the final setStreamingContent flush to the ref
-                    setTimeout(resolve, TYPEWRITER_SPEED_MS * 2);
+                    resolve();
                 }
             }, 50);
         });
 
         stopTypewriter();
+        const finalContent = collected.join('');
 
-        const final = streamingContentRef.current;
         setMessages((prev) => {
             const updated = [...prev];
-            updated[updated.length - 1] = { ...updated[updated.length - 1], content: final };
+            updated[updated.length - 1] = {
+                ...updated[updated.length - 1],
+                content: finalContent,
+            };
             return updated;
         });
         setStreamingContent('');
 
-        return final;
+        return finalContent;
     }
 
-    return { messages, setMessages, isLoading, streamingContent, fetchChat };
+    async function startChat(chatId, modelId) {
+        return fetchStream(CHAT_START_ENDPOINT, {
+            chat_id: chatId,
+            model_id: modelId,
+        });
+    }
+
+    async function sendMessage(message, chatId, modelId) {
+        return fetchStream(CHAT_MESSAGE_ENDPOINT, {
+            chat_id: chatId,
+            message,
+            model_id: modelId,
+        });
+    }
+
+    return { messages, setMessages, isLoading, streamingContent, startChat, sendMessage };
 }

@@ -1,99 +1,23 @@
-.backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.45);
-  backdrop-filter: blur(4px);
-  -webkit-backdrop-filter: blur(4px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  padding: 1rem;
-  animation: fadeIn 0.18s ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
 .modal {
-  position: relative;
-  background: var(--color-surface);
-  border-radius: 20px;
-  padding: 2.5rem 2.25rem 2rem;
-  max-width: 550px;
-  width: 100%;
-  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.18);
-  animation: slideUp 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(24px) scale(0.97); }
-  to   { opacity: 1; transform: translateY(0)    scale(1);    }
-}
-
-.close {
-  position: absolute;
-  top: 1.1rem;
-  right: 1.1rem;
-  background: var(--color-surface-secondary);
-  border: none;
-  border-radius: 50%;
-  width: 2rem;
-  height: 2rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  color: var(--color-text-secondary);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.15s, color 0.15s;
-}
-.close:hover { background: var(--color-border-hover); color: var(--color-text-primary); }
-
-.eyebrow {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--color-text-muted);
-  margin-bottom: 0.5rem;
-}
-
-.title {
-  font-size: 1.65rem;
-  font-weight: 700;
-  color: var(--color-text-primary);
-  line-height: 1.2;
-  margin: 0 0 1rem;
+  height: 60vh;
 }
 
 .descriptionBlock {
-  margin-bottom: 1.25rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.65rem;
+  margin-bottom: 1.1rem;
 }
 
 .descriptionPara {
-  margin: 0;
-  font-size: 0.92rem;
+  font-size: 0.95rem;
   color: var(--color-text-secondary);
-  line-height: 1.3;
-}
-
-.descriptionPara br {
-  display: block;
-  content: "";
-  margin-top: 0.35rem;
+  line-height: 1.65;
+  margin: 0 0 0.75rem;
 }
 
 .goals {
-  background: var(--color-surface-secondary);
+  background: var(--color-brand-subtle);
   border-radius: 10px;
   padding: 0.75rem 1rem;
-  margin-bottom: 1.25rem;
+  margin-bottom: 1.1rem;
 }
 
 .goalsLabel {
@@ -102,7 +26,7 @@
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--color-text-muted);
+  color: var(--color-brand);
   margin-bottom: 0.5rem;
 }
 
@@ -124,11 +48,10 @@
   display: flex;
   align-items: baseline;
   gap: 0.6rem;
-  background: var(--color-accent-roleplay-subtle);
-  border: 1px solid var(--color-accent-roleplay-border);
+  background: var(--color-brand-subtle);
+  border: 1px solid var(--color-brand-subtle-border);
   border-radius: 10px;
   padding: 0.65rem 1rem;
-  margin-bottom: 1.75rem;
 }
 
 .focusLabel {
@@ -136,44 +59,41 @@
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--color-accent-roleplay);
+  color: var(--color-brand);
   white-space: nowrap;
 }
 
 .focusValue {
   font-size: 0.95rem;
-  color: var(--color-accent-roleplay-deep);
+  color: var(--color-brand-deep);
   font-weight: 500;
 }
 
-.actions {
-  display: flex;
-  gap: 0.75rem;
-  justify-content: flex-end;
+/* accent overrides */
+.accentRoleplay {
+  background: var(--color-accent-roleplay-subtle, var(--color-brand-subtle));
+  border-color: var(--color-accent-roleplay-subtle-border, var(--color-brand-subtle-border));
 }
 
-.btnGhost {
-  padding: 0.6rem 1.1rem;
-  border-radius: 10px;
-  border: 1px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background 0.15s, color 0.15s;
+.accentRoleplay .goalsLabel,
+.accentRoleplay .focusLabel {
+  color: var(--color-accent-roleplay);
 }
-.btnGhost:hover { background: var(--color-surface-secondary); color: var(--color-text-primary); }
 
-.btnPrimary {
-  padding: 0.6rem 1.35rem;
-  border-radius: 10px;
-  border: none;
-  background: var(--color-brand);
-  color: #fff;
-  font-size: 0.9rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.15s, transform 0.1s;
+.accentRoleplay .focusValue {
+  color: var(--color-accent-roleplay);
 }
-.btnPrimary:hover  { background: var(--color-brand-hover); transform: translateY(-1px); }
-.btnPrimary:active { transform: scale(0.97); }
+
+.accentGame {
+  background: var(--color-accent-game-subtle, var(--color-brand-subtle));
+  border-color: var(--color-accent-game-subtle-border, var(--color-brand-subtle-border));
+}
+
+.accentGame .goalsLabel,
+.accentGame .focusLabel {
+  color: var(--color-accent-game, var(--color-brand));
+}
+
+.accentGame .focusValue {
+  color: var(--color-accent-game, var(--color-brand));
+}
