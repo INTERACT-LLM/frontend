@@ -4,9 +4,9 @@ import { endpoints } from "@/lib/api";
 export async function GET(request, { params }) {
   const { lessonId } = await params;
   const { searchParams } = new URL(request.url);
-  const sessionId = searchParams.get("session_id");
+  const chatId = searchParams.get("chat_id");
 
-  const res = await fetch(`${endpoints.lessons}/${lessonId}/prompts?session_id=${sessionId}`);
+  const res = await fetch(`${endpoints.lessons}/${lessonId}/prompts?chat_id=${chatId}`);
   
   if (!res.ok) {
     const text = await res.text();

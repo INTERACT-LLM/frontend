@@ -4,22 +4,17 @@ import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import styles from "./LessonPreviewModal.module.css";
 
-/**
- * split a long_description into paragraphs, then sentences within each.
- * blank lines in the TOML become paragraph breaks; sentences within a
- * paragraph are each placed on their own line for readability.
- */
 function parseDescription(text) {
   if (!text) return [];
 
   return text
     .trim()
-    .split(/\n\s*\n/)                          // split on blank lines → paragraphs
+    .split(/\n\s*\n/)
     .map((para) =>
       para
         .trim()
         .replace(/\s+/g, " ")
-        .match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g) // sentences
+        .match(/[^.!?]+[.!?]+(?:\s|$)|[^.!?]+$/g)
         ?.map((s) => s.trim())
         .filter(Boolean) ?? []
     )
@@ -28,6 +23,7 @@ function parseDescription(text) {
 
 export default function LessonModal({ lesson, onClose }) {
   const router = useRouter();
+  const [tutorStarts, setTutorStarts] = React.useState(false);
 
   useEffect(() => {
     const handler = (e) => e.key === "Escape" && onClose();
@@ -46,10 +42,9 @@ export default function LessonModal({ lesson, onClose }) {
 
   const handleStart = () => {
     onClose();
-    router.push(`/lessons/${lesson.id}`);
+    const query = tutorStarts ? "?tutor_starts=true" : "";
+    router.push(`/lessons/${lesson.id}${query}`);
   };
-
-  const { intro, steps } = parseDescription(lesson.ui_long_description);
 
   return (
     <div
@@ -100,12 +95,27 @@ export default function LessonModal({ lesson, onClose }) {
         )}
 
         <div className={styles.actions}>
-          <button className={styles.btnGhost} onClick={onClose}>
-            Not now
-          </button>
-          <button className={styles.btnPrimary} onClick={handleStart}>
-            Start lesson →
-          </button>
+          {/* Tutor starts toggle */}
+          <div className={styles.tutorToggle}>
+            <span className={styles.tutorToggleLabel}>
+              {tutorStarts ? "Tutor starts" : "You start"}
+            </span>
+            <button
+              role="switch"
+              aria-checked={tutorStarts}
+              className={`${styles.toggle} ${tutorStarts ? styles.toggleOn : ""}`}
+              onClick={() => setTutorStarts((prev) => !prev)}
+            />
+          </div>
+
+          <div className={styles.buttons}>
+            <button className={styles.btnGhost} onClick={onClose}>
+              Not now
+            </button>
+            <button className={styles.btnPrimary} onClick={handleStart}>
+              Start lesson →
+            </button>
+          </div>
         </div>
       </div>
     </div>
