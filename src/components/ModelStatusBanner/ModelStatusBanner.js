@@ -6,8 +6,9 @@ import { useLLMConfig } from '@/context/LLMConfigContext';
 import styles from './ModelStatusBanner.module.css';
 
 const PROVIDER_LABELS = {
-  ollama: 'Ollama',
-  vllm:   'vLLM',
+  ollama:    'Ollama',
+  vllm:      'vLLM',
+  anthropic: 'Anthropic',
 };
 
 const POLL_INTERVAL_MS = 15_000;
@@ -17,13 +18,16 @@ export default function ModelStatusBanner() {
   const pathname = usePathname();
   const router   = useRouter();
 
-  const [open, setOpen]                   = React.useState(false);
+  const [open, setOpen]                     = React.useState(false);
+  const [statusData, setStatusData]         = React.useState(null);
   const [providerStatus, setProviderStatus] = React.useState('checking');
   const modalRef = React.useRef(null);
 
-  const isInLesson    = pathname?.startsWith('/lessons/') && pathname !== '/lessons';
-  const isLessonGrid  = pathname === '/lessons';
-  const canSwitch     = isLessonGrid && provider === 'ollama';
+  const isInLesson   = pathname?.startsWith('/lessons/') && pathname !== '/lessons';
+  const isLessonGrid = pathname === '/lessons';
+  const canSwitch    = isLessonGrid && provider === 'ollama';
+
+  const activeProvider = statusData?.active_provider ?? provider;
 
   // Poll provider health
   React.useEffect(() => {
@@ -32,9 +36,16 @@ export default function ModelStatusBanner() {
 
     async function checkStatus() {
       try {
-        const res = await fetch('/api/llm/status');
-        if (!cancelled)
-          setProviderStatus(res.ok && (await res.json()).online ? 'online' : 'offline');
+        const res  = await fetch('/api/llm/status');
+        const data = await res.json();
+        if (cancelled) return;
+        setStatusData(data);
+
+        const somethingOnline =
+          data.online ||
+          (data.active_provider !== data.provider && data.backup?.status === 'ready');
+
+        setProviderStatus(res.ok && somethingOnline ? 'online' : 'offline');
       } catch {
         if (!cancelled) setProviderStatus('offline');
       }
@@ -97,7 +108,7 @@ export default function ModelStatusBanner() {
         </span>
         <span className={styles.pillModel}>{selectedModel}</span>
         <span className={styles.pillSlash}>/</span>
-        <span className={styles.pillProvider}>{PROVIDER_LABELS[provider] ?? provider}</span>
+        <span className={styles.pillProvider}>{PROVIDER_LABELS[activeProvider] ?? activeProvider}</span>
       </button>
 
       {/* ── Modal overlay ── */}
@@ -114,7 +125,7 @@ export default function ModelStatusBanner() {
               {/* Description */}
               <p className={styles.desc}>
                 Your tutor is powered by <strong>{selectedModel}</strong>, served
-                via <strong>{PROVIDER_LABELS[provider] ?? provider}</strong> — an open-source
+                via <strong>{PROVIDER_LABELS[activeProvider] ?? activeProvider}</strong> — an open-source
                 inference library running on secure university servers.
               </p>
 
@@ -122,7 +133,7 @@ export default function ModelStatusBanner() {
               <div className={styles.statusRow}>
                 <div className={styles.statusRowLeft}>
                   <span className={styles.statusModel}>{selectedModel}</span>
-                  <span className={styles.statusMeta}>{PROVIDER_LABELS[provider] ?? provider}</span>
+                  <span className={styles.statusMeta}>{PROVIDER_LABELS[activeProvider] ?? activeProvider}</span>
                 </div>
                 <span className={`${styles.statusBadge} ${styles[providerStatus]}`}>
                   <span className={`${styles.statusDot} ${styles[providerStatus]}`} />
@@ -135,7 +146,6 @@ export default function ModelStatusBanner() {
                 <div className={styles.offlineNotice}>
                   The model is currently unreachable. Please check back later or{' '}
                   contact us if the issue persists!
-                {/* uncomment the line below to add a contact link */}
                 {/*<a className={styles.contactLink} href="/contact">contact us</a> if the issue persists.*/}
                 </div>
               )}
