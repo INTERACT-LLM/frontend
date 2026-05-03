@@ -12,7 +12,7 @@ export default function FreeChatPreviewModal({ onClose }) {
   const handleStart = (tutorStarts) => {
     onClose();
     const query = tutorStarts ? "?tutor_starts=true" : "";
-    router.push(`/free-chat${query}`);
+    router.push(`/chat/free${query}`);
   };
 
   return (
