@@ -13,6 +13,7 @@ export default function ChatPane({
   messages,
   feedbacks,
   isLoading,
+  isStreaming,
   sessionReady,
   promptsData,
   showDetails,
@@ -65,7 +66,7 @@ export default function ChatPane({
 
       <div className={styles.footer}>
         {!isFreeChat && <ProgressBar userTurns={userTurns} minTurns={minTurns} />}
-        <ChatInput onSubmit={onSubmit} disabled={isLoading || !sessionReady} />
+        <ChatInput onSubmit={onSubmit} disabled={isLoading || isStreaming || !sessionReady} />
       </div>
 
       {showDetails && !isFreeChat && lessonData && (

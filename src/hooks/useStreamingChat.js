@@ -6,6 +6,7 @@ const CHAT_START_ENDPOINT = '/api/chat/start';
 export function useStreamingChat() {
     const [messages, setMessages] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
+    const [isStreaming, setIsStreaming] = React.useState(false);
     const [streamingContent, setStreamingContent] = React.useState('');
 
     const typewriterQueue = React.useRef([]);
@@ -33,9 +34,9 @@ export function useStreamingChat() {
         }
     }
 
-    // internal helper — handles any SSE endpoint
-    async function fetchStream(endpoint, body, addUserMessage = false) {
+    async function fetchStream(endpoint, body) {
         setIsLoading(true);
+        setIsStreaming(false);
         setStreamingContent('');
         streamingContentRef.current = '';
         typewriterQueue.current = [];
@@ -46,13 +47,9 @@ export function useStreamingChat() {
             body: JSON.stringify(body),
         });
 
-        if (addUserMessage) {
-            setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
-        } else {
-            setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
-        }
-
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
         setIsLoading(false);
+        setIsStreaming(true);
         startTypewriter();
 
         const reader = response.body.getReader();
@@ -78,7 +75,6 @@ export function useStreamingChat() {
             }
         }
 
-        // Wait for typewriter to drain
         await new Promise((resolve) => {
             const check = setInterval(() => {
                 if (typewriterQueue.current.length === 0) {
@@ -93,13 +89,12 @@ export function useStreamingChat() {
 
         setMessages((prev) => {
             const updated = [...prev];
-            updated[updated.length - 1] = {
-                ...updated[updated.length - 1],
-                content: finalContent,
-            };
+            updated[updated.length - 1] = { ...updated[updated.length - 1], content: finalContent };
             return updated;
         });
+
         setStreamingContent('');
+        setIsStreaming(false);
 
         return finalContent;
     }
@@ -119,5 +114,5 @@ export function useStreamingChat() {
         });
     }
 
-    return { messages, setMessages, isLoading, streamingContent, startChat, sendMessage };
+    return { messages, setMessages, isLoading, isStreaming, streamingContent, startChat, sendMessage };
 }

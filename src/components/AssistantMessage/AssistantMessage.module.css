@@ -5,3 +5,11 @@
   border-radius: 14px 14px 14px 4px;
   border: 0.5px solid var(--color-border);
 }
+
+.feedbackHidden {
+  opacity: 0;
+}
+
+.feedbackVisible {
+  opacity: 1;
+}

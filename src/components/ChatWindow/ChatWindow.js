@@ -21,7 +21,7 @@ const fetcher = (url) => fetch(url).then(res => res.json());
 export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, ready = true }) {
     const { user } = useUser();
     const { selectedModel } = useLLMConfig();
-    const { messages, setMessages, isLoading, streamingContent, startChat, sendMessage } = useStreamingChat();
+    const { messages, setMessages, isLoading, isStreaming, streamingContent, startChat, sendMessage } = useStreamingChat();
 
     const searchParams = useSearchParams();
     const tutorStarts = tutorStartsProp ?? searchParams.get('tutor_starts') === 'true';
@@ -43,22 +43,20 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     const [isComplete, setIsComplete] = React.useState(false);
     const [showDetails, setShowDetails] = React.useState(false);
     const hasAssistantResponded = messages.some(m => m.role === 'assistant');
-
+    
     async function submitNewMessage(newMessage) {
-        if (!newMessage.trim() || isLoading || !chatId) return;
+        if (!newMessage.trim() || isLoading || isStreaming || !chatId) return;
         tabu.checkUserMessage(newMessage);
 
         const userMessage = { role: 'user', content: newMessage };
         setMessages(prev => [...prev, userMessage]);
 
-        await Promise.all([
-            sendMessage(userMessage, chatId, selectedModel),
-            lessonId ? addFeedback(userMessage) : Promise.resolve(),
-        ]).then(([assistantContent]) => {
-            if (assistantContent) tabu.checkLLMResponse(assistantContent);
-        });
-    }
+        const assistantContent = await sendMessage(userMessage, chatId, selectedModel);
+        if (assistantContent) tabu.checkLLMResponse(assistantContent);
 
+        if (lessonId) await addFeedback(userMessage);
+    }
+    
     async function handleEndLesson() {
         setIsComplete(true);
         try {
@@ -77,6 +75,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 lessonTitle={lessonData?.lesson_presentation.ui_title}
                 userTurns={userTurns}
                 detailedFeedback={detailedFeedback}
+                isLoadingFeedback={detailedFeedback === null}
             />
         );
     }
@@ -89,6 +88,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 messages={messages}
                 feedbacks={feedbacks}
                 isLoading={isLoading}
+                isStreaming={isStreaming}
                 sessionReady={!!chatId}
                 promptsData={promptsData}
                 showDetails={showDetails}

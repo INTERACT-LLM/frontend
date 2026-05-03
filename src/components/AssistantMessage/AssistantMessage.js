@@ -5,7 +5,11 @@ import styles from './AssistantMessage.module.css';
 export default function AssistantMessage({ content, feedback, isStreaming }) {
   return (
     <ChatMessage content={content} className={styles.message}>
-      {!isStreaming && <ImmediateFeedback feedback={feedback} />}
+      {!isStreaming && (
+        <div className={feedback ? styles.feedbackVisible : styles.feedbackHidden}>
+          <ImmediateFeedback feedback={feedback} />
+        </div>
+      )}
     </ChatMessage>
   );
 }
