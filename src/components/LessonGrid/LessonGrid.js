@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import useSWR from "swr";
 import Card from "@/components/Card/Card";
 import LessonPreviewModal from "@/components/LessonPreviewModal/LessonPreviewModal";
@@ -29,6 +30,7 @@ async function fetcher(url) {
 
 export default function LessonGrid() {
   const { user } = useUser();
+  const router = useRouter();
   const firstName = user?.name?.split(' ')?.[0] || '';
 
   const { data, isLoading, error } = useSWR(LESSONS_ENDPOINT, fetcher);
@@ -125,6 +127,10 @@ export default function LessonGrid() {
       {activeModal?.type === 'freeChat' && (
         <FreeChatPreviewModal
           onClose={() => setActiveModal(null)}
+          onStart={(tutorStarts) => {
+            const query = tutorStarts ? "?tutor_starts=true" : "";
+            router.push(`/chat/free${query}`);
+          }}
         />
       )}
     </div>

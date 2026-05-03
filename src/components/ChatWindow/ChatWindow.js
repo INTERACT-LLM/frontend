@@ -26,7 +26,7 @@ const GAME_STATE_ENDPOINT = (id, chatId) => `/api/lessons/${id}/game-state?chat_
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
-export default function ChatWindow({ lessonId }) {
+export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, ready = true }) {
     const { user } = useUser();
     const { selectedModel } = useLLMConfig();
 
@@ -40,13 +40,13 @@ export default function ChatWindow({ lessonId }) {
     const [gameState, setGameState] = React.useState(null);
 
     const searchParams = useSearchParams();
-    const tutorStarts = searchParams.get("tutor_starts") === "true";
+    const tutorStarts = tutorStartsProp ?? searchParams.get("tutor_starts") === "true";
 
     const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
-    // 1. create user session
+    // 1. create user session — gated on ready
     const { data: sessionData } = useSWR(
-        user ? [SESSION_ENDPOINT, sessionId] : null,
+        user && ready ? [SESSION_ENDPOINT, sessionId] : null,
         ([url]) => fetch(url, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -64,7 +64,7 @@ export default function ChatWindow({ lessonId }) {
 
     // 2. create chat once session exists, snapshot config
     React.useEffect(() => {
-        if (!sessionData) return;
+        if (!sessionData || !ready) return;
         fetch(CHAT_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -76,13 +76,13 @@ export default function ChatWindow({ lessonId }) {
         })
             .then((res) => res.json())
             .then((data) => setChatId(data.chat_id));
-    }, [sessionData]);
+    }, [sessionData, ready]);
 
     // 3. if tutor starts, fire the opener once chat is ready
     React.useEffect(() => {
         if (!chatId || !tutorStarts) return;
         startChat(chatId, selectedModel);
-    }, [chatId]);
+    }, [chatId, tutorStarts]);
 
     // 4. load game state for tabu/20Q — waits for chatId
     React.useEffect(() => {
