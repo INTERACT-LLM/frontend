@@ -2,10 +2,12 @@
 
 import React from 'react';
 import { useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import ChatWindow from "@/components/ChatWindow/ChatWindow";
 import FreeChatPreviewModal from "@/components/FreeChatPreviewModal/FreeChatPreviewModal";
 
-export default function FreeChatPage() {
+// wrapp search params in inner component
+function FreeChatContent() {
   const searchParams = useSearchParams();
   const [showModal, setShowModal] = React.useState(
     () => searchParams.get('setup') === 'true'
@@ -28,5 +30,14 @@ export default function FreeChatPage() {
         />
       )}
     </main>
+  );
+}
+
+// ✅ Outer page: wraps the inner component in a Suspense boundary
+export default function FreeChatPage() {
+  return (
+    <Suspense fallback={null}>
+      <FreeChatContent />
+    </Suspense>
   );
 }
