@@ -44,7 +44,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
 
     const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
-    // 1. create user session — gated on ready
+    // 1. create user session, gated on ready
     const { data: sessionData } = useSWR(
         user && ready ? [SESSION_ENDPOINT, sessionId] : null,
         ([url]) => fetch(url, {
@@ -84,7 +84,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         startChat(chatId, selectedModel);
     }, [chatId, tutorStarts]);
 
-    // 4. load game state for tabu/20Q — waits for chatId
+    // 4. load game state for tabu/20Q, waits for chatId
     React.useEffect(() => {
         if (!lessonId || !lessonData || !chatId) return;
         fetch(GAME_STATE_ENDPOINT(lessonId, chatId))
@@ -92,7 +92,6 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             .then(data => setGameState(data));
     }, [lessonId, lessonData, chatId]);
 
-    // waits for chatId so snapshotted config is available on backend
     const { data: promptsData } = useSWR(
         lessonId && chatId ? LESSON_PROMPTS_ENDPOINT(lessonId, chatId) : null,
         fetcher
@@ -121,7 +120,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 last_user_message: userMessage,
-                lesson_id: lessonId,
+                lesson_id: lessonId ?? null,
                 chat_id: chatId,
                 model_id: selectedModel,
             }),
@@ -135,7 +134,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 messages: cleanMessages,
-                lesson_id: lessonId,
+                lesson_id: lessonId ?? null,
                 chat_id: chatId,
                 model_id: selectedModel,
             }),
@@ -149,20 +148,17 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         const userMessage = { role: 'user', content: newMessage };
         setMessages((prev) => [...prev, userMessage]);
 
-        if (lessonId) {
-            const [assistantContent, feedbackResponse] = await Promise.all([
-                sendMessage(userMessage, chatId, selectedModel),
-                fetchFeedback(userMessage),
-            ]);
-            if (assistantContent) tabu.checkLLMResponse(assistantContent);
-            setFeedbacks((prev) => [...prev, {
-                feedback: feedbackResponse?.FeedbackResponse,
-                feedbackStatus: feedbackResponse?.feedback_status,
-            }]);
-        } else {
-            const assistantContent = await sendMessage(userMessage, chatId, selectedModel);
-            if (assistantContent) tabu.checkLLMResponse(assistantContent);
-        }
+        const [assistantContent, feedbackResponse] = await Promise.all([
+            sendMessage(userMessage, chatId, selectedModel),
+            fetchFeedback(userMessage),
+        ]);
+
+        if (assistantContent) tabu.checkLLMResponse(assistantContent);
+
+        setFeedbacks((prev) => [...prev, {
+            feedback: feedbackResponse?.FeedbackResponse,
+            feedbackStatus: feedbackResponse?.feedback_status,
+        }]);
     }
 
     async function handleEndLesson() {
