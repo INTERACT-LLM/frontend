@@ -1,5 +1,7 @@
+// WHAT SITS IN THE HEADER WHEN YOU'RE LOGGED IN, SHOWING YOUR INITIALS AND A DROPDOWN WITH OPTIONS
 import React from "react";
 import styles from "./UserAvatar.module.css";
+import LogoutButton from "@/components/LogoutButton/LogoutButton";
 
 function initials(name) {
   return name
@@ -55,6 +57,9 @@ export default function UserAvatar({ user, onEditRequest, disabled = false }) {
           >
             {disabled ? "Cannot edit during lesson" : "Edit preferences"}
           </button>
+        {!disabled && (
+          <LogoutButton className={styles.dropdownLogout} />
+        )}
         </div>
       )}
     </div>

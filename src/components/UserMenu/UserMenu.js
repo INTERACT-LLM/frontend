@@ -1,4 +1,4 @@
-// has user avatar and modal for editing user preferences: is what sits in header
+// has user avatar and modal for editing user preferences:
 "use client";
 import { useParams } from "next/navigation"; // get lessonId from url to disable editing during lesson
 import UserAvatar from "@/components/UserAvatar/UserAvatar";

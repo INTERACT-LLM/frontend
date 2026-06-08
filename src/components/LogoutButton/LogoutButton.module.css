@@ -1,0 +1,4 @@
+.warning {
+  color: var(--color-error);
+  font-weight: 600;
+}
