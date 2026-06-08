@@ -1,6 +1,6 @@
 "use client";
+import React from "react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
 import styles from "./LoginPage.module.css";
 import UserFields from "@/components/UserFields/UserFields";
 
@@ -25,7 +25,7 @@ const DEFAULTS = {
 
 export default function LoginPage() {
   const router = useRouter();
-  const [form, setForm] = useState(DEFAULTS);
+  const [form, setForm] = React.useState(DEFAULTS);
 
   function set(field, value) {
     setForm((f) => ({ ...f, [field]: value }));
