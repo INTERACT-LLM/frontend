@@ -232,3 +232,14 @@
     padding: 32px 24px;
   }
 }
+
+.required {
+  color: var(--color-error);
+  margin-left: 2px;
+}
+
+.optional {
+  color: var(--color-text-secondary);
+  font-weight: 400;
+  margin-left: 4px;
+}
