@@ -18,7 +18,9 @@ export default function UserFields({ form, set, onSubmit, nameRef, children, sty
   return (
     <>
       <div className={styles.field}>
-        <label className={styles.label}>Your name</label>
+        <label className={styles.label}>
+          Your name <span className={styles.required}>*</span>
+        </label>
         <input
           ref={nameRef}
           type="text"
@@ -35,7 +37,9 @@ export default function UserFields({ form, set, onSubmit, nameRef, children, sty
       {children}
 
       <div className={styles.field}>
-        <label className={styles.label}>Proficiency level</label>
+        <label className={styles.label}>
+          Proficiency level <span className={styles.required}>*</span>
+        </label>
         <div className={styles.levelGroup}>
           {LEVELS.map((lvl) => (
             <button
@@ -53,7 +57,9 @@ export default function UserFields({ form, set, onSubmit, nameRef, children, sty
       </div>
 
       <div className={styles.field}>
-        <label className={styles.label}>Your preferences (custom instructions)</label>
+        <label className={styles.label}>
+          Custom instructions / Preferences <span className={styles.optional}>(optional)</span>
+        </label>
         <textarea
           value={form.preferences}
           onChange={(e) => set("preferences", e.target.value)}

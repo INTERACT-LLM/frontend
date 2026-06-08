@@ -81,7 +81,7 @@ export default function LoginPage() {
           <div className={styles.formHeader}>
             <h2 className={styles.formTitle}>Set up your profile</h2>
             <p className={styles.formSub}>
-              Personalizes your experience.
+              Takes 20 seconds. Personalizes your experience.
             </p>
           </div>
 
@@ -89,7 +89,9 @@ export default function LoginPage() {
             <div className={styles.row}>
               {/* native language */}
               <div className={styles.field}>
-                <label className={styles.label}>I speak</label>
+                <label className={styles.label}>
+                  I speak <span className={styles.required}>*</span>
+                </label>
                 <select
                   value={form.nativeLanguage}
                   onChange={(e) => set("nativeLanguage", e.target.value)}
@@ -105,7 +107,9 @@ export default function LoginPage() {
 
               {/* learning language */}
               <div className={styles.field}>
-                <label className={styles.label}>I'm learning</label>
+                <label className={styles.label}>
+                  I'm learning <span className={styles.required}>*</span>
+                </label>
                 <select
                   value={safeLearningLanguage}
                   onChange={(e) => set("learningLanguage", e.target.value)}
