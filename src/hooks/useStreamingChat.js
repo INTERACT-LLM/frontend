@@ -3,10 +3,11 @@ import React from 'react';
 const CHAT_MESSAGE_ENDPOINT = '/api/chat/message';
 const CHAT_START_ENDPOINT = '/api/chat/start';
 
-export function useStreamingChat() {
+export function useStreamingChat({ onTerminated } = {}) {
     const [messages, setMessages] = React.useState([]);
     const [isLoading, setIsLoading] = React.useState(false);
     const [streamingContent, setStreamingContent] = React.useState('');
+    const [terminated, setTerminated] = React.useState(null); // null | { reason, provider }
 
     const typewriterQueue = React.useRef([]);
     const typewriterInterval = React.useRef(null);
@@ -33,25 +34,44 @@ export function useStreamingChat() {
         }
     }
 
-    // internal helper — handles any SSE endpoint
-    async function fetchStream(endpoint, body, addUserMessage = false) {
+    function resetTerminated() {
+        setTerminated(null);
+    }
+
+    async function fetchStream(endpoint, body) {
         setIsLoading(true);
         setStreamingContent('');
         streamingContentRef.current = '';
         typewriterQueue.current = [];
 
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body),
-        });
-
-        if (addUserMessage) {
-            setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
-        } else {
-            setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
+        let response;
+        try {
+            response = await fetch(endpoint, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body),
+            });
+        } catch (networkErr) {
+            // Network error reaching the backend itself — treat as termination.
+            setIsLoading(false);
+            const info = { reason: 'network_error', provider: null };
+            setTerminated(info);
+            onTerminated?.(info);
+            return null;
         }
 
+        // 410 Gone: chat already terminated server-side.
+        if (response.status === 410) {
+            setIsLoading(false);
+            let detail = {};
+            try { detail = (await response.json()).detail ?? {}; } catch {}
+            const info = { reason: detail.reason ?? 'chat_terminated', provider: null };
+            setTerminated(info);
+            onTerminated?.(info);
+            return null;
+        }
+
+        setMessages((prev) => [...prev, { role: 'assistant', content: '' }]);
         setIsLoading(false);
         startTypewriter();
 
@@ -59,6 +79,7 @@ export function useStreamingChat() {
         const decoder = new TextDecoder();
         let buffer = '';
         const collected = [];
+        let errorInfo = null;
 
         while (true) {
             const { done, value } = await reader.read();
@@ -70,11 +91,28 @@ export function useStreamingChat() {
 
             for (const line of lines) {
                 if (!line.startsWith('data: ')) continue;
-                const token = line.slice(6);
-                if (token === '[DONE]') continue;
+                const payload = line.slice(6);
+                if (payload === '[DONE]') continue;
 
-                collected.push(token);
-                typewriterQueue.current.push(token);
+                // Detect structured error event from the backend.
+                // Plain text tokens don't start with '{', so this is cheap.
+                if (payload.startsWith('{')) {
+                    try {
+                        const parsed = JSON.parse(payload);
+                        if (parsed.error) {
+                            errorInfo = {
+                                reason: parsed.error,
+                                provider: parsed.provider ?? null,
+                            };
+                            continue;
+                        }
+                    } catch {
+                        // Not JSON after all — fall through and treat as a token.
+                    }
+                }
+
+                collected.push(payload);
+                typewriterQueue.current.push(payload);
             }
         }
 
@@ -101,23 +139,30 @@ export function useStreamingChat() {
         });
         setStreamingContent('');
 
+        if (errorInfo) {
+            setTerminated(errorInfo);
+            onTerminated?.(errorInfo);
+        }
+
         return finalContent;
     }
 
-    async function startChat(chatId, modelId) {
-        return fetchStream(CHAT_START_ENDPOINT, {
-            chat_id: chatId,
-            model_id: modelId,
-        });
+    async function startChat(chatId) {
+        return fetchStream(CHAT_START_ENDPOINT, { chat_id: chatId });
     }
 
-    async function sendMessage(message, chatId, modelId) {
-        return fetchStream(CHAT_MESSAGE_ENDPOINT, {
-            chat_id: chatId,
-            message,
-            model_id: modelId,
-        });
+    async function sendMessage(message, chatId) {
+        return fetchStream(CHAT_MESSAGE_ENDPOINT, { chat_id: chatId, message });
     }
 
-    return { messages, setMessages, isLoading, streamingContent, startChat, sendMessage };
+    return {
+        messages,
+        setMessages,
+        isLoading,
+        streamingContent,
+        terminated,
+        resetTerminated,
+        startChat,
+        sendMessage,
+    };
 }

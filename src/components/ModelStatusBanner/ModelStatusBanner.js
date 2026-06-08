@@ -1,82 +1,62 @@
 'use client';
 
 import React from 'react';
+import useSWR from 'swr';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLLMConfig } from '@/context/LLMConfigContext';
 import styles from './ModelStatusBanner.module.css';
 
 const PROVIDER_LABELS = {
   ollama: 'Ollama',
-  vllm:   'vLLM',
-  anthropic: 'Anthropic',
+  vllm: 'vLLM',
+  anthropic: 'Claude',
 };
 
+const LLM_STATUS_ENDPOINT = '/api/llm/status';
 const POLL_INTERVAL_MS = 15_000;
 
-export default function ModelStatusBanner() {
-  const {
-    selectedModel,
-    selectModel,
-    availableModels,
-    provider,           // configured provider (was: provider)
-    isLoading,
-  } = useLLMConfig();
+const fetcher = (url) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error(`status ${res.status}`);
+  return res.json();
+});
 
+export default function ModelStatusBanner() {
+  const { selectedModel, selectModel, availableModels, provider, isLoading } = useLLMConfig();
   const pathname = usePathname();
-  const router   = useRouter();
+  const router = useRouter();
 
   const [open, setOpen] = React.useState(false);
-  const [status, setStatus] = React.useState({
-    state: 'checking',           // 'checking' | 'online' | 'offline'
-    activeProvider: null,        // who's currently serving
-    isFailedOver: false,
-    fallbackModel: null,
-  });
   const modalRef = React.useRef(null);
 
-  const isInLesson    = pathname?.startsWith('/lessons/') && pathname !== '/lessons';
-  const isLessonGrid  = pathname === '/lessons';
-  // Don't allow model switching while on the fallback — Claude doesn't use the local model list
-  const canSwitch     = isLessonGrid && provider === 'ollama' && !status.isFailedOver;
-
-  // Poll provider status
-  React.useEffect(() => {
-    if (!provider) return;
-    let cancelled = false;
-
-    async function checkStatus() {
-      try {
-        const res = await fetch('/api/llm/status');
-        if (cancelled) return;
-        if (!res.ok) {
-          setStatus(s => ({ ...s, state: 'offline' }));
-          return;
-        }
-        const data = await res.json();
-        setStatus({
-          state: data.primary_online || data.is_failed_over ? 'online' : 'offline',
-          activeProvider: data.active_provider,
-          isFailedOver: data.is_failed_over,
-          fallbackModel: data.fallback_model,
-        });
-      } catch {
-        if (!cancelled) setStatus(s => ({ ...s, state: 'offline' }));
-      }
+  const { data: statusData, error: statusError, isLoading: statusLoading } = useSWR(
+    LLM_STATUS_ENDPOINT,
+    fetcher,
+    {
+      refreshInterval: POLL_INTERVAL_MS,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
     }
+  );
 
-    function handleVisibility() {
-      if (!document.hidden) checkStatus();
+  // Derive UI state from the status payload
+  const status = React.useMemo(() => {
+    if (statusError) {
+      return { state: 'offline', activeProvider: null, isFailedOver: false, fallbackModel: null };
     }
-
-    checkStatus();
-    const id = setInterval(() => { if (!document.hidden) checkStatus(); }, POLL_INTERVAL_MS);
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-      document.removeEventListener('visibilitychange', handleVisibility);
+    if (!statusData) {
+      return { state: 'checking', activeProvider: null, isFailedOver: false, fallbackModel: null };
+    }
+    return {
+      state: (statusData.primary_online || statusData.is_failed_over) ? 'online' : 'offline',
+      activeProvider: statusData.active_provider,
+      isFailedOver: statusData.is_failed_over,
+      fallbackModel: statusData.fallback_model,
     };
-  }, [provider]);
+  }, [statusData, statusError]);
+
+  const isInLesson = pathname?.startsWith('/lessons/') && pathname !== '/lessons';
+  const isLessonGrid = pathname === '/lessons';
+  const canSwitch = isLessonGrid && provider === 'ollama' && !status.isFailedOver;
 
   // Close modal on outside click
   React.useEffect(() => {
@@ -109,22 +89,37 @@ export default function ModelStatusBanner() {
     }
   }
 
-  // What the pill/modal should display: when failed over, show fallback info
-  const displayModel    = status.isFailedOver ? status.fallbackModel : selectedModel;
+  const displayModel = status.isFailedOver ? status.fallbackModel : selectedModel;
   const displayProvider = status.isFailedOver ? 'anthropic' : provider;
-  const statusOnline    = status.state === 'online';
+  const statusOnline = status.state === 'online';
+
+  const badgeClass = status.isFailedOver
+    ? styles.backup
+    : statusOnline
+      ? styles.online
+      : status.state === 'offline'
+        ? styles.offline
+        : styles.checking;
+
+  const badgeLabel = status.state === 'checking'
+    ? 'Connecting'
+    : status.isFailedOver
+      ? 'Backup'
+      : statusOnline ? 'Online' : 'Offline';
+
+  const badgeLabelLong = status.state === 'checking'
+    ? 'Connecting…'
+    : status.isFailedOver
+      ? 'Backup active'
+      : statusOnline ? 'Online' : 'Offline';
 
   return (
     <>
       {/* ── Pill trigger ── */}
       <button className={styles.pill} onClick={() => setOpen(true)}>
-        <span className={`${styles.pillBadge} ${statusOnline ? styles.online : status.state === 'offline' ? styles.offline : styles.checking}`}>
-          <span className={`${styles.pillDot} ${statusOnline ? styles.online : status.state === 'offline' ? styles.offline : styles.checking}`} />
-          {status.state === 'checking'
-            ? 'Connecting'
-            : status.isFailedOver
-              ? 'Backup'
-              : statusOnline ? 'Online' : 'Offline'}
+        <span className={`${styles.pillBadge} ${badgeClass}`}>
+          <span className={`${styles.pillDot} ${badgeClass}`} />
+          {badgeLabel}
         </span>
         <span className={styles.pillModel}>{displayModel}</span>
         <span className={styles.pillSlash}>/</span>
@@ -166,17 +161,13 @@ export default function ModelStatusBanner() {
                   <span className={styles.statusModel}>{displayModel}</span>
                   <span className={styles.statusMeta}>{PROVIDER_LABELS[displayProvider] ?? displayProvider}</span>
                 </div>
-                <span className={`${styles.statusBadge} ${styles[status.state]}`}>
-                  <span className={`${styles.statusDot} ${styles[status.state]}`} />
-                  {status.state === 'checking'
-                    ? 'Connecting…'
-                    : status.isFailedOver
-                      ? 'Backup active'
-                      : statusOnline ? 'Online' : 'Offline'}
+                <span className={`${styles.statusBadge} ${badgeClass}`}>
+                  <span className={`${styles.statusDot} ${badgeClass}`} />
+                  {badgeLabelLong}
                 </span>
               </div>
 
-              {/* Offline notice (only when *neither* primary nor fallback is serving) */}
+              {/* Offline notice — only when truly offline (no fallback serving) */}
               {status.state === 'offline' && !status.isFailedOver && (
                 <div className={styles.offlineNotice}>
                   The model is currently unreachable. Please check back later or{' '}
@@ -184,7 +175,7 @@ export default function ModelStatusBanner() {
                 </div>
               )}
 
-              {/* Model switcher — only on lessons grid, only on Ollama, only when primary is serving */}
+              {/* Model switcher — only when on primary Ollama on the lesson grid */}
               {canSwitch && statusOnline && (
                 <>
                   <div className={styles.divider} />
