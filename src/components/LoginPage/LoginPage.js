@@ -71,7 +71,7 @@ export default function LoginPage() {
             </p>
           </div>
           <p className={styles.leftFooter}>
-            Your profile is saved locally.<br />No account needed.
+            Prototype v1.0 <br /> Profiles are currently saved locally in your browser.
           </p>
         </div>
       </div>
@@ -81,7 +81,7 @@ export default function LoginPage() {
           <div className={styles.formHeader}>
             <h2 className={styles.formTitle}>Set up your profile</h2>
             <p className={styles.formSub}>
-              Takes 20 seconds. Personalises your experience.
+              Personalizes your experience.
             </p>
           </div>
 
