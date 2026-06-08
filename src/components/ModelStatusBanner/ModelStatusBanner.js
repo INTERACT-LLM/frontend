@@ -1,58 +1,62 @@
 'use client';
 
 import React from 'react';
+import useSWR from 'swr';
 import { usePathname, useRouter } from 'next/navigation';
 import { useLLMConfig } from '@/context/LLMConfigContext';
 import styles from './ModelStatusBanner.module.css';
 
 const PROVIDER_LABELS = {
   ollama: 'Ollama',
-  vllm:   'vLLM',
+  vllm: 'vLLM',
+  anthropic: 'Claude',
 };
 
+const LLM_STATUS_ENDPOINT = '/api/llm/status';
 const POLL_INTERVAL_MS = 15_000;
+
+const fetcher = (url) => fetch(url).then((res) => {
+  if (!res.ok) throw new Error(`status ${res.status}`);
+  return res.json();
+});
 
 export default function ModelStatusBanner() {
   const { selectedModel, selectModel, availableModels, provider, isLoading } = useLLMConfig();
   const pathname = usePathname();
-  const router   = useRouter();
+  const router = useRouter();
 
-  const [open, setOpen]                   = React.useState(false);
-  const [providerStatus, setProviderStatus] = React.useState('checking');
+  const [open, setOpen] = React.useState(false);
   const modalRef = React.useRef(null);
 
-  const isInLesson    = pathname?.startsWith('/lessons/') && pathname !== '/lessons';
-  const isLessonGrid  = pathname === '/lessons';
-  const canSwitch     = isLessonGrid && provider === 'ollama';
-
-  // Poll provider health
-  React.useEffect(() => {
-    if (!provider) return;
-    let cancelled = false;
-
-    async function checkStatus() {
-      try {
-        const res = await fetch('/api/llm/status');
-        if (!cancelled)
-          setProviderStatus(res.ok && (await res.json()).online ? 'online' : 'offline');
-      } catch {
-        if (!cancelled) setProviderStatus('offline');
-      }
+  const { data: statusData, error: statusError, isLoading: statusLoading } = useSWR(
+    LLM_STATUS_ENDPOINT,
+    fetcher,
+    {
+      refreshInterval: POLL_INTERVAL_MS,
+      revalidateOnFocus: true,
+      revalidateOnReconnect: true,
     }
+  );
 
-    function handleVisibility() {
-      if (!document.hidden) checkStatus();
+  // Derive UI state from the status payload
+  const status = React.useMemo(() => {
+    if (statusError) {
+      return { state: 'offline', activeProvider: null, isFailedOver: false, fallbackModel: null };
     }
-
-    checkStatus();
-    const id = setInterval(() => { if (!document.hidden) checkStatus(); }, POLL_INTERVAL_MS);
-    document.addEventListener('visibilitychange', handleVisibility);
-    return () => {
-      cancelled = true;
-      clearInterval(id);
-      document.removeEventListener('visibilitychange', handleVisibility);
+    if (!statusData) {
+      return { state: 'checking', activeProvider: null, isFailedOver: false, fallbackModel: null };
+    }
+    return {
+      state: (statusData.primary_online || statusData.is_failed_over) ? 'online' : 'offline',
+      activeProvider: statusData.active_provider,
+      isFailedOver: statusData.is_failed_over,
+      fallbackModel: statusData.fallback_model,
     };
-  }, [provider]);
+  }, [statusData, statusError]);
+
+  const isInLesson = pathname?.startsWith('/lessons/') && pathname !== '/lessons';
+  const isLessonGrid = pathname === '/lessons';
+  const canSwitch = isLessonGrid && provider === 'ollama' && !status.isFailedOver;
 
   // Close modal on outside click
   React.useEffect(() => {
@@ -85,19 +89,41 @@ export default function ModelStatusBanner() {
     }
   }
 
-  const statusOnline = providerStatus === 'online';
+  const displayModel = status.isFailedOver ? status.fallbackModel : selectedModel;
+  const displayProvider = status.isFailedOver ? 'anthropic' : provider;
+  const statusOnline = status.state === 'online';
+
+  const badgeClass = status.isFailedOver
+    ? styles.backup
+    : statusOnline
+      ? styles.online
+      : status.state === 'offline'
+        ? styles.offline
+        : styles.checking;
+
+  const badgeLabel = status.state === 'checking'
+    ? 'Connecting'
+    : status.isFailedOver
+      ? 'Backup'
+      : statusOnline ? 'Online' : 'Offline';
+
+  const badgeLabelLong = status.state === 'checking'
+    ? 'Connecting…'
+    : status.isFailedOver
+      ? 'Backup active'
+      : statusOnline ? 'Online' : 'Offline';
 
   return (
     <>
       {/* ── Pill trigger ── */}
       <button className={styles.pill} onClick={() => setOpen(true)}>
-        <span className={`${styles.pillBadge} ${statusOnline ? styles.online : providerStatus === 'offline' ? styles.offline : styles.checking}`}>
-          <span className={`${styles.pillDot} ${statusOnline ? styles.online : providerStatus === 'offline' ? styles.offline : styles.checking}`} />
-          {providerStatus === 'checking' ? 'Connecting' : statusOnline ? 'Online' : 'Offline'}
+        <span className={`${styles.pillBadge} ${badgeClass}`}>
+          <span className={`${styles.pillDot} ${badgeClass}`} />
+          {badgeLabel}
         </span>
-        <span className={styles.pillModel}>{selectedModel}</span>
+        <span className={styles.pillModel}>{displayModel}</span>
         <span className={styles.pillSlash}>/</span>
-        <span className={styles.pillProvider}>{PROVIDER_LABELS[provider] ?? provider}</span>
+        <span className={styles.pillProvider}>{PROVIDER_LABELS[displayProvider] ?? displayProvider}</span>
       </button>
 
       {/* ── Modal overlay ── */}
@@ -113,34 +139,43 @@ export default function ModelStatusBanner() {
             <div className={styles.modalBody}>
               {/* Description */}
               <p className={styles.desc}>
-                Your tutor is powered by <strong>{selectedModel}</strong>, served
-                via <strong>{PROVIDER_LABELS[provider] ?? provider}</strong> — an open-source
-                inference library running on secure university servers.
+                {status.isFailedOver ? (
+                  <>
+                    The primary tutor model is currently offline. Your tutor is temporarily
+                    powered by <strong>{status.fallbackModel}</strong> via{' '}
+                    <strong>Anthropic</strong> as a backup. New conversations will switch
+                    back to the primary model once it is online again.
+                  </>
+                ) : (
+                  <>
+                    Your tutor is powered by <strong>{selectedModel}</strong>, served
+                    via <strong>{PROVIDER_LABELS[provider] ?? provider}</strong> — an open-source
+                    inference library running on secure university servers.
+                  </>
+                )}
               </p>
 
               {/* Status row */}
               <div className={styles.statusRow}>
                 <div className={styles.statusRowLeft}>
-                  <span className={styles.statusModel}>{selectedModel}</span>
-                  <span className={styles.statusMeta}>{PROVIDER_LABELS[provider] ?? provider}</span>
+                  <span className={styles.statusModel}>{displayModel}</span>
+                  <span className={styles.statusMeta}>{PROVIDER_LABELS[displayProvider] ?? displayProvider}</span>
                 </div>
-                <span className={`${styles.statusBadge} ${styles[providerStatus]}`}>
-                  <span className={`${styles.statusDot} ${styles[providerStatus]}`} />
-                  {providerStatus === 'checking' ? 'Connecting…' : statusOnline ? 'Online' : 'Offline'}
+                <span className={`${styles.statusBadge} ${badgeClass}`}>
+                  <span className={`${styles.statusDot} ${badgeClass}`} />
+                  {badgeLabelLong}
                 </span>
               </div>
 
-              {/* Offline notice */}
-              {providerStatus === 'offline' && (
+              {/* Offline notice — only when truly offline (no fallback serving) */}
+              {status.state === 'offline' && !status.isFailedOver && (
                 <div className={styles.offlineNotice}>
                   The model is currently unreachable. Please check back later or{' '}
                   contact us if the issue persists!
-                {/* uncomment the line below to add a contact link */}
-                {/*<a className={styles.contactLink} href="/contact">contact us</a> if the issue persists.*/}
                 </div>
               )}
 
-              {/* Model switcher — Ollama on lessons grid only */}
+              {/* Model switcher — only when on primary Ollama on the lesson grid */}
               {canSwitch && statusOnline && (
                 <>
                   <div className={styles.divider} />

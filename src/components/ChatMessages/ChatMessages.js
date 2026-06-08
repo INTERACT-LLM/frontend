@@ -5,7 +5,7 @@ import UserMessage from '@/components/UserMessage/UserMessage';
 
 const isAssistant = (msg) => msg.role === 'assistant';
 
-export default function ChatMessages({ messages, feedbacks, isLoading, streamingContent = '' }) {
+export default function ChatMessages({ messages, feedbacks, isLoading, streamingContent = '', terminated = false }) {
     const bottomRef = React.useRef(null);
 
     React.useEffect(() => {
@@ -17,7 +17,6 @@ export default function ChatMessages({ messages, feedbacks, isLoading, streaming
         let userIdx = 0;
         messages.forEach((msg, i) => {
             if (msg.role === 'user') {
-                // find the assistant message that follows this user message
                 const nextAssistantIdx = messages.findIndex(
                     (m, j) => j > i && m.role === 'assistant'
                 );
@@ -31,7 +30,7 @@ export default function ChatMessages({ messages, feedbacks, isLoading, streaming
     }, [messages, feedbacks]);
 
     return (
-        <div className={styles.messages}>
+        <div className={`${styles.messages} ${terminated ? styles.terminated : ''}`}>
             {messages.map((msg, i) => {
                 const isLast = i === messages.length - 1;
                 const isStreaming = isLast && isAssistant(msg) && !!streamingContent;
@@ -51,7 +50,7 @@ export default function ChatMessages({ messages, feedbacks, isLoading, streaming
                 );
             })}
 
-            {isLoading && (
+            {isLoading && !terminated && (
                 <div className={styles.typingRow}>
                     <div className={styles.typingBubble}>
                         <span className={styles.dot} />

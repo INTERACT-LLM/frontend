@@ -2,12 +2,11 @@
 'use client';
 
 import React from 'react';
-import useSWR from 'swr';
+import useSWR, { mutate as globalMutate } from 'swr';
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
 import { useTabuGame } from '@/hooks/useTabuGame';
 import { useTwentyQGame } from '@/hooks/useTwentyQGame';
-import { useLLMConfig } from '@/context/LLMConfigContext';
 import { useStreamingChat } from '@/hooks/useStreamingChat';
 import ChatPane from '@/components/ChatPane/ChatPane';
 import TabuPane from '@/components/TabuPane/TabuPane';
@@ -17,6 +16,7 @@ import styles from './ChatWindow.module.css';
 
 const SESSION_ENDPOINT = '/api/session';
 const CHAT_ENDPOINT = '/api/chat';
+const LLM_STATUS_ENDPOINT = '/api/llm/status';
 const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
 const LESSON_PROMPTS_ENDPOINT = (id, chatId) => `/api/lessons/${id}/prompts?chat_id=${chatId}`;
 const FREE_CHAT_PROMPTS_ENDPOINT = (chatId) => `/api/chat/free/prompts?chat_id=${chatId}`;
@@ -28,9 +28,17 @@ const fetcher = (url) => fetch(url).then((res) => res.json());
 
 export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, ready = true }) {
     const { user } = useUser();
-    const { selectedModel } = useLLMConfig();
 
-    const { messages, setMessages, isLoading, streamingContent, startChat, sendMessage } = useStreamingChat();
+    // When chat terminates, kick the global /llm/status cache so the banner updates immediately.
+    const handleTerminated = React.useCallback(() => {
+        globalMutate(LLM_STATUS_ENDPOINT);
+    }, []);
+
+    const {
+        messages, setMessages, isLoading, streamingContent,
+        terminated, resetTerminated, startChat, sendMessage,
+    } = useStreamingChat({ onTerminated: handleTerminated });
+
     const [sessionId] = React.useState(() => `session-${Date.now()}`);
     const [chatId, setChatId] = React.useState(null);
     const [feedbacks, setFeedbacks] = React.useState([]);
@@ -38,6 +46,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     const [detailedFeedback, setDetailedFeedback] = React.useState(null);
     const [showDetails, setShowDetails] = React.useState(false);
     const [gameState, setGameState] = React.useState(null);
+    const [isRestarting, setIsRestarting] = React.useState(false);
 
     const searchParams = useSearchParams();
     const tutorStarts = tutorStartsProp ?? searchParams.get("tutor_starts") === "true";
@@ -81,7 +90,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     // 3. if tutor starts, fire the opener once chat is ready
     React.useEffect(() => {
         if (!chatId || !tutorStarts) return;
-        startChat(chatId, selectedModel);
+        startChat(chatId);
     }, [chatId, tutorStarts]);
 
     // 4. load game state for tabu/20Q, waits for chatId
@@ -110,9 +119,9 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     const turnsRemaining = minTurns !== null ? Math.max(0, minTurns - userTurns) : null;
     const hasAssistantResponded = messages.some(m => m.role === 'assistant');
 
-    const canEndLesson = lessonId
+    const canEndLesson = !terminated && (lessonId
         ? (tabu.guessed || twentyQ.result !== null || (minTurns !== null && userTurns >= minTurns && !isLoading))
-        : true;
+        : true);
 
     async function fetchFeedback(userMessage) {
         return fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
@@ -122,7 +131,6 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 last_user_message: userMessage,
                 lesson_id: lessonId ?? null,
                 chat_id: chatId,
-                model_id: selectedModel,
             }),
         }).then((res) => res.json());
     }
@@ -136,20 +144,19 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 messages: cleanMessages,
                 lesson_id: lessonId ?? null,
                 chat_id: chatId,
-                model_id: selectedModel,
             }),
         }).then((res) => res.json());
     }
 
     async function submitNewMessage(newMessage) {
-        if (!newMessage.trim() || isLoading || !chatId) return;
+        if (!newMessage.trim() || isLoading || !chatId || terminated) return;
         tabu.checkUserMessage(newMessage);
 
         const userMessage = { role: 'user', content: newMessage };
         setMessages((prev) => [...prev, userMessage]);
 
         const [assistantContent, feedbackResponse] = await Promise.all([
-            sendMessage(userMessage, chatId, selectedModel),
+            sendMessage(userMessage, chatId),
             fetchFeedback(userMessage),
         ]);
 
@@ -159,6 +166,37 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             feedback: feedbackResponse?.FeedbackResponse,
             feedbackStatus: feedbackResponse?.feedback_status,
         }]);
+    }
+
+    async function handleRestart() {
+        if (isRestarting) return;
+        setIsRestarting(true);
+        try {
+            // Clean up the old chat server-side
+            if (chatId) {
+                fetch(`/api/chat/${chatId}`, { method: 'DELETE' });
+            }
+            // Reset local state
+            setMessages([]);
+            setFeedbacks([]);
+            setChatId(null);
+            resetTerminated();
+
+            // Create a new chat — will bind to whichever provider is active now
+            const res = await fetch(CHAT_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    session_id: sessionId,
+                    lesson_id: lessonId ?? null,
+                    tutor_starts: tutorStarts,
+                }),
+            });
+            const data = await res.json();
+            setChatId(data.chat_id);
+        } finally {
+            setIsRestarting(false);
+        }
     }
 
     async function handleEndLesson() {
@@ -207,6 +245,9 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 isFreeChat={!lessonId}
                 freeChatPrompt={freeChatPromptData?.chat_system_prompt}
                 tutorStarts={tutorStarts}
+                terminated={terminated}
+                isRestarting={isRestarting}
+                onRestart={handleRestart}
             />
             {gameState?.game_type === 'tabu' && (
                 <TabuPane

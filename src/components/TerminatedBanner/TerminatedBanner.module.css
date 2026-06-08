@@ -1,0 +1,38 @@
+.banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--color-border, #e5e5e5);
+  border-radius: 8px;
+  background: var(--color-surface-muted, #fff8e6);
+  color: var(--color-text, #1a1a1a);
+}
+
+.text {
+  flex: 1;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.button {
+  flex-shrink: 0;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid var(--color-border, #d4d4d4);
+  border-radius: 6px;
+  background: var(--color-surface, #fff);
+  color: inherit;
+  font-size: 0.9rem;
+  cursor: pointer;
+}
+
+.button:hover:not(:disabled) {
+  background: var(--color-surface-hover, #f5f5f5);
+}
+
+.button:disabled {
+  opacity: 0.6;
+  cursor: default;
+}

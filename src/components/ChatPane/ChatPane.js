@@ -7,6 +7,7 @@ import ChatInput from "@/components/ChatInput/ChatInput";
 import ProgressBar from '@/components/ProgressBar/ProgressBar';
 import LessonDetailsModal from "@/components/LessonDetailsModal/LessonDetailsModal";
 import FreeChatDetailsModal from "@/components/FreeChatDetailsModal/FreeChatDetailsModal";
+import TerminatedBanner from '@/components/TerminatedBanner/TerminatedBanner';
 
 export default function ChatPane({
   lessonData,
@@ -27,6 +28,9 @@ export default function ChatPane({
   streamingContent,
   isFreeChat,
   freeChatPrompt,
+  terminated,
+  isRestarting,
+  onRestart,
 }) {
   return (
     <div className={styles.pane}>
@@ -60,12 +64,24 @@ export default function ChatPane({
       </div>
 
       <div className={styles.messages}>
-        <ChatMessages messages={messages} isLoading={isLoading} feedbacks={feedbacks} streamingContent={streamingContent} />
+        <ChatMessages
+          messages={messages}
+          isLoading={isLoading}
+          feedbacks={feedbacks}
+          streamingContent={streamingContent}
+          terminated={!!terminated}
+        />
       </div>
 
       <div className={styles.footer}>
+        {terminated && (
+          <TerminatedBanner
+            isRestarting={isRestarting}
+            onRestart={onRestart}
+          />
+        )}
         {!isFreeChat && <ProgressBar userTurns={userTurns} minTurns={minTurns} />}
-        <ChatInput onSubmit={onSubmit} disabled={isLoading || !sessionReady} />
+        <ChatInput onSubmit={onSubmit} disabled={isLoading || !sessionReady || !!terminated} />
       </div>
 
       {showDetails && !isFreeChat && lessonData && (
