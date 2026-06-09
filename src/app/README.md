@@ -1,4 +1,4 @@
-`app/` is organised with route groups to separate authenticated and unauthenticated areas:
+`app/` is organised with route groups to separate authenticated and unauthenticated areas (see also [Next.js docs](https://nextjs.org/docs/pages/building-your-application/routing)):
 
 | 📁 Folder | Purpose |
 | --- | --- |
