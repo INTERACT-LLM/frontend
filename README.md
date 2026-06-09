@@ -20,7 +20,7 @@ The application code lives under `src/`. Top-level folders:
 ## 🛠️ Technical Requirements
 Developed on macOS (`26.5.1`) and currently deployed on a Linux server. Built with `React 19.2.4` and `Next.js 16.2.3` (App Router, `src/` directory).
 
-Requires `Node.js 20.9` or higher. [Download here]((https://nodejs.org/en)).
+Requires `Node.js 20.9` or higher. [Download here](https://nodejs.org/en).
 
 ## Project Setup
 Install dependencies and start the dev server:
