@@ -1,5 +1,5 @@
-// try API_BASE URL (custom local dev), then NEXT_PUBLIC_API_URL (custom prod), then fallback to localhost
-const BASE = process.env.API_BASE_URL || process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+// the NEXT_PUBLIC_API_URL (custom prod), then fallback to localhost
+const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const endpoints = {
   session:          `${BASE}/api/session`,
