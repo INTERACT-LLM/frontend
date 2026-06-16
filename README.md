@@ -15,7 +15,7 @@ The application code lives under `src/`. Top-level folders:
 | `hooks` | Custom React hooks for streaming chat, auto-scroll, auto-resize, and game logic (Tabú, 20 Questions). | — |
 | `lib` | Client utilities: API endpoint definitions (`api.js`) and JWT gate-token helpers (`gate-token.js`). | — |
 
-`proxy.js` at the project root handles request forwarding to the backend. (Formly known as Next.js middleware; see the [migration note](https://nextjs.org/docs/messages/middleware-to-proxy).)
+`proxy.js` at the project root handles request forwarding to the backend. (Formerly known as Next.js middleware; see the [migration note](https://nextjs.org/docs/messages/middleware-to-proxy).)
 
 ## 🛠️ Technical Requirements
 Developed on macOS (`26.5.1`) and currently deployed on a Linux server. Built with `React 19.2.4` and `Next.js 16.2.3` (App Router, `src/` directory).
