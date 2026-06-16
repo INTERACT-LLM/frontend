@@ -21,14 +21,14 @@ const fetcher = (url) => fetch(url).then((res) => {
 });
 
 export default function ModelStatusBanner() {
-  const { selectedModel, selectModel, availableModels, provider, isLoading } = useLLMConfig();
+  const { selectedModel, provider, isLoading } = useLLMConfig();
   const pathname = usePathname();
   const router = useRouter();
 
   const [open, setOpen] = React.useState(false);
   const modalRef = React.useRef(null);
 
-  const { data: statusData, error: statusError, isLoading: statusLoading } = useSWR(
+  const { data: statusData, error: statusError } = useSWR(
     LLM_STATUS_ENDPOINT,
     fetcher,
     {
@@ -38,7 +38,6 @@ export default function ModelStatusBanner() {
     }
   );
 
-  // Derive UI state from the status payload
   const status = React.useMemo(() => {
     if (statusError) {
       return { state: 'offline', activeProvider: null, isFailedOver: false, fallbackModel: null };
@@ -55,10 +54,7 @@ export default function ModelStatusBanner() {
   }, [statusData, statusError]);
 
   const isInLesson = pathname?.startsWith('/lessons/') && pathname !== '/lessons';
-  const isLessonGrid = pathname === '/lessons';
-  const canSwitch = isLessonGrid && provider === 'ollama' && !status.isFailedOver;
 
-  // Close modal on outside click
   React.useEffect(() => {
     if (!open) return;
     function handleClick(e) {
@@ -68,7 +64,6 @@ export default function ModelStatusBanner() {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
-  // Close modal on Escape
   React.useEffect(() => {
     if (!open) return;
     function handleKey(e) {
@@ -81,12 +76,8 @@ export default function ModelStatusBanner() {
   if (isLoading || !selectedModel || !provider) return null;
 
   function handleCta() {
-    if (isInLesson) {
-      setOpen(false);
-    } else {
-      router.push('/lessons');
-      setOpen(false);
-    }
+    router.push(isInLesson ? '/lessons' : '/lessons');
+    setOpen(false);
   }
 
   const displayModel = status.isFailedOver ? status.fallbackModel : selectedModel;
@@ -115,7 +106,6 @@ export default function ModelStatusBanner() {
 
   return (
     <>
-      {/* ── Pill trigger ── */}
       <button className={styles.pill} onClick={() => setOpen(true)}>
         <span className={`${styles.pillBadge} ${badgeClass}`}>
           <span className={`${styles.pillDot} ${badgeClass}`} />
@@ -126,7 +116,6 @@ export default function ModelStatusBanner() {
         <span className={styles.pillProvider}>{PROVIDER_LABELS[displayProvider] ?? displayProvider}</span>
       </button>
 
-      {/* ── Modal overlay ── */}
       {open && (
         <div className={styles.overlay}>
           <div className={styles.modal} ref={modalRef} role="dialog" aria-modal="true" aria-label="AI tutor status">
@@ -137,7 +126,6 @@ export default function ModelStatusBanner() {
             </div>
 
             <div className={styles.modalBody}>
-              {/* Description */}
               <p className={styles.desc}>
                 {status.isFailedOver ? (
                   <>
@@ -155,7 +143,6 @@ export default function ModelStatusBanner() {
                 )}
               </p>
 
-              {/* Status row */}
               <div className={styles.statusRow}>
                 <div className={styles.statusRowLeft}>
                   <span className={styles.statusModel}>{displayModel}</span>
@@ -167,7 +154,6 @@ export default function ModelStatusBanner() {
                 </span>
               </div>
 
-              {/* Offline notice — only when truly offline (no fallback serving) */}
               {status.state === 'offline' && !status.isFailedOver && (
                 <div className={styles.offlineNotice}>
                   The model is currently unreachable. Please check back later or{' '}
@@ -175,32 +161,9 @@ export default function ModelStatusBanner() {
                 </div>
               )}
 
-              {/* Model switcher — only when on primary Ollama on the lesson grid */}
-              {canSwitch && statusOnline && (
-                <>
-                  <div className={styles.divider} />
-                  <div>
-                    <div className={styles.switcherLabel}>Switch model</div>
-                    <div className={styles.switcherList}>
-                      {availableModels.map((model) => (
-                        <button
-                          key={model}
-                          className={`${styles.switcherOption} ${model === selectedModel ? styles.active : ''}`}
-                          onClick={() => { selectModel(model); setOpen(false); }}
-                        >
-                          <span className={styles.switcherName}>{model}</span>
-                          {model === selectedModel && <span className={styles.switcherCheck}>✓</span>}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              {/* CTA */}
               {statusOnline && (
                 <button className={styles.cta} onClick={handleCta}>
-                  {isInLesson ? 'Back to chat' : 'Go to lessons'}
+                  {isInLesson ? 'Back to lessons' : 'Go to lessons'}
                   <span className={styles.ctaArrow}>→</span>
                 </button>
               )}
