@@ -81,7 +81,7 @@ export default function ChatPane({
           />
         )}
         {!isFreeChat && <ProgressBar userTurns={userTurns} minTurns={minTurns} />}
-        <ChatInput onSubmit={onSubmit} disabled={isLoading || !sessionReady || !!terminated} />
+        <ChatInput onSubmit={onSubmit} disabled={isLoading || !!streamingContent || !sessionReady || !!terminated} />
       </div>
 
       {showDetails && !isFreeChat && lessonData && (

@@ -149,7 +149,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     }
 
     async function submitNewMessage(newMessage) {
-        if (!newMessage.trim() || isLoading || !chatId || terminated) return;
+        if (!newMessage.trim() || isLoading || !!streamingContent || !chatId || terminated) return;
         tabu.checkUserMessage(newMessage);
 
         const userMessage = { role: 'user', content: newMessage };
