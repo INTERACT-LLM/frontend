@@ -1,7 +1,7 @@
 /* all logic lives here, ChatPane and the game panes (TabuPane, TwentyQPane) is for what is rendered */
 'use client';
 
-import React from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import useSWR, { mutate as globalMutate } from 'swr';
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
@@ -14,7 +14,6 @@ import TwentyQPane from '@/components/TwentyQPane/TwentyQPane';
 import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
 import styles from './ChatWindow.module.css';
 
-const SESSION_ENDPOINT = '/api/session';
 const CHAT_ENDPOINT = '/api/chat';
 const LLM_STATUS_ENDPOINT = '/api/llm/status';
 const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
@@ -39,7 +38,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     const { user } = useUser();
 
     // When chat terminates, kick the global /llm/status cache so the banner updates immediately.
-    const handleTerminated = React.useCallback(() => {
+    const handleTerminated = useCallback(() => {
         globalMutate(LLM_STATUS_ENDPOINT);
     }, []);
 
@@ -48,28 +47,29 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         terminated, resetTerminated, startChat, sendMessage,
     } = useStreamingChat({ onTerminated: handleTerminated });
 
-    const [sessionId] = React.useState(() => `session-${Date.now()}`);
-    const [chatId, setChatId] = React.useState(null);
-    const [feedbacks, setFeedbacks] = React.useState([]);
-    const [isComplete, setIsComplete] = React.useState(false);
-    const [detailedFeedback, setDetailedFeedback] = React.useState(null);
-    const [showDetails, setShowDetails] = React.useState(false);
-    const [gameState, setGameState] = React.useState(null);
-    const [isRestarting, setIsRestarting] = React.useState(false);
+    const [chatId, setChatId] = useState(null);
+    const [feedbacks, setFeedbacks] = useState([]);
+    const [isComplete, setIsComplete] = useState(false);
+    const [detailedFeedback, setDetailedFeedback] = useState(null);
+    const [showDetails, setShowDetails] = useState(false);
+    const [gameState, setGameState] = useState(null);
+    const [isRestarting, setIsRestarting] = useState(false);
+
+    const chatRequestedRef = useRef(false);
 
     const searchParams = useSearchParams();
     const tutorStarts = tutorStartsProp ?? searchParams.get("tutor_starts") === "true";
 
     const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
-    // 1. create user session, gated on ready
-    const { data: sessionData } = useSWR(
-        user && ready ? [SESSION_ENDPOINT, sessionId] : null,
-        ([url]) => fetch(url, {
+    // one request creates the chat and carries the user profile with it.
+    async function createChat() {
+        const res = await fetch(CHAT_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                session_id: sessionId,
+                lesson_id: lessonId ?? null,
+                tutor_starts: tutorStarts,
                 user_profile: {
                     name: user.name,
                     language: user.language,
@@ -77,33 +77,26 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                     preferences: user.preferences,
                 },
             }),
-        }).then((res) => res.json())
-    );
+        });
+        const data = await res.json();
+        return data.chat_id;
+    }
 
-    // 2. create chat once session exists, snapshot config
-    React.useEffect(() => {
-        if (!sessionData || !ready) return;
-        fetch(CHAT_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                session_id: sessionId,
-                lesson_id: lessonId ?? null,
-                tutor_starts: tutorStarts,
-            }),
-        })
-            .then((res) => res.json())
-            .then((data) => setChatId(data.chat_id));
-    }, [sessionData, ready]);
+    // 1. create the chat directly once the user exists and we are ready
+    useEffect(() => {
+        if (!user || !ready || chatRequestedRef.current) return;
+        chatRequestedRef.current = true;
+        createChat().then(setChatId);
+    }, [user, ready]);
 
-    // 3. if tutor starts, fire the opener once chat is ready
-    React.useEffect(() => {
+    // 2. if tutor starts, fire the opener once chat is ready
+    useEffect(() => {
         if (!chatId || !tutorStarts) return;
         startChat(chatId);
     }, [chatId, tutorStarts]);
 
-    // 4. load game state for tabu/20Q, waits for chatId
-    React.useEffect(() => {
+    // 3. load game state for tabu/20Q, waits for chatId
+    useEffect(() => {
         if (!lessonId || !lessonData || !chatId) return;
         fetch(GAME_STATE_ENDPOINT(lessonId, chatId))
             .then(res => res.ok ? res.json() : null)
@@ -174,7 +167,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         if (assistantContent) tabu.checkLLMResponse(assistantContent);
 
         setFeedbacks((prev) => [...prev, {
-            messageId: userMessage.id, 
+            messageId: userMessage.id,
             feedback: feedbackResponse?.FeedbackResponse,
             feedbackStatus: feedbackResponse?.feedback_status,
         }]);
@@ -194,18 +187,9 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             setChatId(null);
             resetTerminated();
 
-            // Create a new chat — will bind to whichever provider is active now
-            const res = await fetch(CHAT_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    session_id: sessionId,
-                    lesson_id: lessonId ?? null,
-                    tutor_starts: tutorStarts,
-                }),
-            });
-            const data = await res.json();
-            setChatId(data.chat_id);
+            // reuse the same helper as the first chat
+            const newChatId = await createChat();
+            setChatId(newChatId);
         } finally {
             setIsRestarting(false);
         }
@@ -220,7 +204,6 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             console.error('detailed feedback error:', err);
         } finally {
             fetch(`/api/chat/${chatId}`, { method: 'DELETE' });
-            fetch(`/api/session/${sessionId}`, { method: 'DELETE' });
         }
     }
 
@@ -242,7 +225,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 messages={messages}
                 feedbacks={feedbacks}
                 isLoading={isLoading}
-                sessionReady={!!chatId}
+                chatReady={!!chatId} 
                 promptsData={promptsData}
                 showDetails={showDetails}
                 onShowDetails={() => setShowDetails(true)}

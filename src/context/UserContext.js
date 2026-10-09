@@ -14,14 +14,33 @@ function loadUser() {
   }
 }
 
+// the one place that writes the profile, mirrors loadUser
+function saveUser(user) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  } catch {
+    // storage blocked (e.g. private mode): the app still works for this visit
+  }
+}
+
+// create the "channel" that components read the user from. Runs once, at file load.
 const UserContext = createContext(null);
 
 export function UserProvider({ children }) {
+  // Holds the current user. When setUser is called, every component reading it re-renders.
   const [user, setUser] = useState(null);
+
+  // Whether the profile modal is open.
   const [showModal, setShowModal] = useState(false);
+
+  // Lets you navigate in code, e.g. send the user to /login.
   const router = useRouter();
+
+  // The current URL path, e.g. "/lessons/game_tabu".
   const pathname = usePathname();
 
+  // Runs after render, and again whenever pathname or router changes.
+  // Loads the saved user, or redirects to /login if there is none.
   useEffect(() => {
     const stored = loadUser();
     if (stored) setUser(stored);
@@ -29,6 +48,7 @@ export function UserProvider({ children }) {
   }, [pathname, router]);
 
   function handleSave(updated) {
+    saveUser(updated); // persist the edit so it survives reloads
     setUser(updated);
     setShowModal(false);
   }
@@ -57,7 +77,9 @@ export function UserProvider({ children }) {
   );
 }
 
+
 export function useUser() {
+  // Reads whatever UserProvider put into UserContext.
   const ctx = useContext(UserContext);
   if (!ctx) throw new Error("useUser must be used inside <UserProvider>");
   return ctx;

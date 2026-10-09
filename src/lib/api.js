@@ -2,7 +2,6 @@
 const BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export const endpoints = {
-  session:          `${BASE}/api/session`,
   chat:             `${BASE}/api/chat`,
   chatStart:        `${BASE}/api/chat/start`,
   chatMessage:      `${BASE}/api/chat/message`,
