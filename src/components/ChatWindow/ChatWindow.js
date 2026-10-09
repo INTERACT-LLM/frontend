@@ -26,6 +26,15 @@ const GAME_STATE_ENDPOINT = (id, chatId) => `/api/lessons/${id}/game-state?chat_
 
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
+//  one id per learner message, shared by the chat call and the feedback call.
+// crypto.randomUUID only exists on https:// or localhost, so fall back otherwise.
+function makeMessageId() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return `msg-${crypto.randomUUID()}`;
+    }
+    return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
 export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, ready = true }) {
     const { user } = useUser();
 
@@ -131,6 +140,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 last_user_message: userMessage,
                 lesson_id: lessonId ?? null,
                 chat_id: chatId,
+                message_id: userMessage.id, // give each msg an id, so we can link between feedback and chat messages
             }),
         }).then((res) => res.json());
     }
@@ -152,7 +162,8 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         if (!newMessage.trim() || isLoading || !!streamingContent || !chatId || terminated) return;
         tabu.checkUserMessage(newMessage);
 
-        const userMessage = { role: 'user', content: newMessage };
+        // the id is created once here and travels with both calls below.
+        const userMessage = { id: makeMessageId(), role: 'user', content: newMessage };
         setMessages((prev) => [...prev, userMessage]);
 
         const [assistantContent, feedbackResponse] = await Promise.all([
@@ -163,6 +174,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         if (assistantContent) tabu.checkLLMResponse(assistantContent);
 
         setFeedbacks((prev) => [...prev, {
+            messageId: userMessage.id, 
             feedback: feedbackResponse?.FeedbackResponse,
             feedbackStatus: feedbackResponse?.feedback_status,
         }]);
