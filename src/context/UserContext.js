@@ -2,6 +2,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { getBrowserId } from "@/lib/browserId";
 
 const STORAGE_KEY = "interactllm_user";
 
@@ -23,6 +24,12 @@ function saveUser(user) {
   }
 }
 
+// Adds this browser's id to a user object.
+// The id is stored under its own key, so it survives clearUser (logout).
+function withBrowserId(user) {
+  return { ...user, browser_id: getBrowserId() };
+}
+
 // create the "channel" that components read the user from. Runs once, at file load.
 const UserContext = createContext(null);
 
@@ -40,21 +47,22 @@ export function UserProvider({ children }) {
   const pathname = usePathname();
 
   // Runs after render, and again whenever pathname or router changes.
-  // Loads the saved user, or redirects to /login if there is none.
+  // Loads the saved user (plus browser id), or redirects to /login if there is none.
   useEffect(() => {
     const stored = loadUser();
-    if (stored) setUser(stored);
+    if (stored) setUser(withBrowserId(stored));
     else if (pathname !== "/login") router.replace("/login");
   }, [pathname, router]);
 
   function handleSave(updated) {
-    saveUser(updated); // persist the edit so it survives reloads
-    setUser(updated);
+    const user = withBrowserId(updated); // an edit can never drop or change the id
+    saveUser(user); // persist the edit so it survives reloads
+    setUser(user);
     setShowModal(false);
   }
 
   function clearUser() {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY); // removes the profile only, browser_id stays
     document.cookie = "interactllm_user=; path=/; max-age=0";
     setUser(null);
     router.push("/login");

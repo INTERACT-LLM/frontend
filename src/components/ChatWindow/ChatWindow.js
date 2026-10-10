@@ -72,6 +72,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 tutor_starts: tutorStarts,
                 user_profile: {
                     name: user.name,
+                    browser_id: user.browser_id, // tells apart learners with the same name
                     language: user.language,
                     proficiency_level: user.proficiency_level,
                     preferences: user.preferences,
