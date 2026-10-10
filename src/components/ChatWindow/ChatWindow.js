@@ -23,6 +23,9 @@ const IMMEDIATE_FEEDBACK_ENDPOINT = '/api/feedback/immediate';
 const DETAILED_FEEDBACK_ENDPOINT = '/api/feedback/detailed';
 const GAME_STATE_ENDPOINT = (id, chatId) => `/api/lessons/${id}/game-state?chat_id=${chatId}`;
 
+// what fetchFeedback returns when the request itself fails (same shape as the backend's error)
+const FEEDBACK_REQUEST_FAILED = { FeedbackResponse: null, feedback_status: 'error' };
+
 const fetcher = (url) => fetch(url).then((res) => res.json());
 
 //  one id per learner message, shared by the chat call and the feedback call.
@@ -51,6 +54,8 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     const [feedbacks, setFeedbacks] = useState([]);
     const [isComplete, setIsComplete] = useState(false);
     const [detailedFeedback, setDetailedFeedback] = useState(null);
+    // 'loading' | 'success' | 'error', so "still waiting" and "failed" are never confused
+    const [detailedStatus, setDetailedStatus] = useState('loading');
     const [showDetails, setShowDetails] = useState(false);
     const [gameState, setGameState] = useState(null);
     const [isRestarting, setIsRestarting] = useState(false);
@@ -126,22 +131,31 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         ? (tabu.guessed || twentyQ.result !== null || (minTurns !== null && userTurns >= minTurns && !isLoading))
         : true);
 
+    // Never throws: a failed request becomes a normal error result,
+    // so Promise.all in submitNewMessage always finishes.
     async function fetchFeedback(userMessage) {
-        return fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                last_user_message: userMessage,
-                lesson_id: lessonId ?? null,
-                chat_id: chatId,
-                message_id: userMessage.id, // give each msg an id, so we can link between feedback and chat messages
-            }),
-        }).then((res) => res.json());
+        try {
+            const res = await fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    last_user_message: userMessage,
+                    lesson_id: lessonId ?? null,
+                    chat_id: chatId,
+                    message_id: userMessage.id, // give each msg an id, so we can link between feedback and chat messages
+                }),
+            });
+            if (!res.ok) return FEEDBACK_REQUEST_FAILED;
+            return await res.json();
+        } catch (err) {
+            console.error('immediate feedback error:', err);
+            return FEEDBACK_REQUEST_FAILED;
+        }
     }
 
     async function fetchDetailedFeedback(msgs) {
         const cleanMessages = msgs.map(({ role, content }) => ({ role, content }));
-        return fetch(DETAILED_FEEDBACK_ENDPOINT, {
+        const res = await fetch(DETAILED_FEEDBACK_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -149,7 +163,10 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 lesson_id: lessonId ?? null,
                 chat_id: chatId,
             }),
-        }).then((res) => res.json());
+        });
+        // a 500 has no JSON body, so stop here with a clear error
+        if (!res.ok) throw new Error(`detailed feedback failed: ${res.status}`);
+        return res.json();
     }
 
     async function submitNewMessage(newMessage) {
@@ -170,7 +187,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         setFeedbacks((prev) => [...prev, {
             messageId: userMessage.id,
             feedback: feedbackResponse?.FeedbackResponse,
-            feedbackStatus: feedbackResponse?.feedback_status,
+            feedbackStatus: feedbackResponse?.feedback_status ?? 'error',
         }]);
     }
 
@@ -198,11 +215,19 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
 
     async function handleEndLesson() {
         setIsComplete(true);
+        setDetailedStatus('loading');
         try {
             const response = await fetchDetailedFeedback(messages);
-            setDetailedFeedback(response?.GeneralFeedbackResponse || '');
+            if (response?.feedback_status === 'success') {
+                setDetailedFeedback(response.GeneralFeedbackResponse);
+                setDetailedStatus('success');
+            } else {
+                console.error('detailed feedback error:', response?.error);
+                setDetailedStatus('error');
+            }
         } catch (err) {
             console.error('detailed feedback error:', err);
+            setDetailedStatus('error');
         } finally {
             fetch(`/api/chat/${chatId}`, { method: 'DELETE' });
         }
@@ -214,6 +239,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 lessonTitle={lessonData?.lesson_presentation.ui_title}
                 userTurns={userTurns}
                 detailedFeedback={detailedFeedback}
+                detailedStatus={detailedStatus}
             />
         );
     }

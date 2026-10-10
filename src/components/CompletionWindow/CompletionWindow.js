@@ -1,11 +1,11 @@
 'use client';
 
-import React from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './CompletionWindow.module.css';
 import GeneralFeedback from '@/components/GeneralFeedback/GeneralFeedback';
 
-export default function CompletionWindow({ lessonTitle, userTurns, detailedFeedback }) {
+// detailedStatus: 'loading' | 'success' | 'error' (set in ChatWindow's handleEndLesson)
+export default function CompletionWindow({ lessonTitle, userTurns, detailedFeedback, detailedStatus }) {
   const router = useRouter();
 
   return (
@@ -22,7 +22,7 @@ export default function CompletionWindow({ lessonTitle, userTurns, detailedFeedb
 
         <div className={styles.feedbackSection}>
           <p className={styles.feedbackHeading}>Lesson feedback</p>
-          <GeneralFeedback feedback={detailedFeedback} />
+          <GeneralFeedback feedback={detailedFeedback} status={detailedStatus} />
         </div>
 
         <button className={styles.returnButton} onClick={() => router.push('/lessons')}>
