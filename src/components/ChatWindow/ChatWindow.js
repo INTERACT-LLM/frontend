@@ -1,7 +1,7 @@
 /* all logic lives here, ChatPane and the game panes (TabuPane, TwentyQPane) is for what is rendered */
 'use client';
 
-import { useState, useEffect, useCallback, useRef } from 'react';
+import React from 'react';
 import useSWR, { mutate as globalMutate } from 'swr';
 import { useSearchParams } from "next/navigation";
 import { useUser } from "@/context/UserContext";
@@ -15,6 +15,8 @@ import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
 import styles from './ChatWindow.module.css';
 
 const CHAT_ENDPOINT = '/api/chat';
+const CHAT_END_ENDPOINT = (chatId) => `/api/chat/${chatId}/end`;
+const TABU_GUESSED_ENDPOINT = (chatId) => `/api/chat/${chatId}/tabu/guessed`;
 const LLM_STATUS_ENDPOINT = '/api/llm/status';
 const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
 const LESSON_PROMPTS_ENDPOINT = (id, chatId) => `/api/lessons/${id}/prompts?chat_id=${chatId}`;
@@ -37,11 +39,35 @@ function makeMessageId() {
     return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
 }
 
+// for logging events (end, tabu guess). Never throws:
+// a failed log is written to the console but never breaks the lesson.
+async function postLog(url, body) {
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) console.error(`log failed: ${url} (${res.status})`);
+    } catch (err) {
+        console.error(`log failed: ${url}`, err);
+    }
+}
+
+// for when the page is going away. sendBeacon survives unloading, fetch usually does not.
+// The Blob gives it a JSON content type, so the backend parses it like a normal request.
+// If the chat already has a reason (e.g. user_ended), the backend ignores this one.
+function sendLeftPage(chatId) {
+    if (!chatId || typeof navigator === 'undefined' || !navigator.sendBeacon) return;
+    const body = new Blob([JSON.stringify({ reason: 'left_page' })], { type: 'application/json' });
+    navigator.sendBeacon(CHAT_END_ENDPOINT(chatId), body);
+}
+
 export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, ready = true }) {
     const { user } = useUser();
 
     // When chat terminates, kick the global /llm/status cache so the banner updates immediately.
-    const handleTerminated = useCallback(() => {
+    const handleTerminated = React.useCallback(() => {
         globalMutate(LLM_STATUS_ENDPOINT);
     }, []);
 
@@ -50,17 +76,22 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         terminated, resetTerminated, startChat, sendMessage,
     } = useStreamingChat({ onTerminated: handleTerminated });
 
-    const [chatId, setChatId] = useState(null);
-    const [feedbacks, setFeedbacks] = useState([]);
-    const [isComplete, setIsComplete] = useState(false);
-    const [detailedFeedback, setDetailedFeedback] = useState(null);
+    const [chatId, setChatId] = React.useState(null);
+    const [feedbacks, setFeedbacks] = React.useState([]);
+    const [isComplete, setIsComplete] = React.useState(false);
+    const [detailedFeedback, setDetailedFeedback] = React.useState(null);
     // 'loading' | 'success' | 'error', so "still waiting" and "failed" are never confused
-    const [detailedStatus, setDetailedStatus] = useState('loading');
-    const [showDetails, setShowDetails] = useState(false);
-    const [gameState, setGameState] = useState(null);
-    const [isRestarting, setIsRestarting] = useState(false);
+    const [detailedStatus, setDetailedStatus] = React.useState('loading');
+    const [showDetails, setShowDetails] = React.useState(false);
+    const [gameState, setGameState] = React.useState(null);
+    const [isRestarting, setIsRestarting] = React.useState(false);
 
-    const chatRequestedRef = useRef(false);
+    const chatRequestedRef = React.useRef(false);
+
+    // latest chatId for the pagehide listener, which is set up only once
+    // and would otherwise only ever see the first value (null)
+    const chatIdRef = React.useRef(null);
+    chatIdRef.current = chatId;
 
     const searchParams = useSearchParams();
     const tutorStarts = tutorStartsProp ?? searchParams.get("tutor_starts") === "true";
@@ -68,13 +99,15 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
     // one request creates the chat and carries the user profile with it.
-    async function createChat() {
+    // previousChatId is only set when this chat replaces one (restart).
+    async function createChat(previousChatId = null) {
         const res = await fetch(CHAT_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 lesson_id: lessonId ?? null,
                 tutor_starts: tutorStarts,
+                restarted_from: previousChatId,
                 user_profile: {
                     name: user.name,
                     browser_id: user.browser_id, // tells apart learners with the same name
@@ -89,25 +122,36 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     }
 
     // 1. create the chat directly once the user exists and we are ready
-    useEffect(() => {
+    React.useEffect(() => {
         if (!user || !ready || chatRequestedRef.current) return;
         chatRequestedRef.current = true;
         createChat().then(setChatId);
     }, [user, ready]);
 
     // 2. if tutor starts, fire the opener once chat is ready
-    useEffect(() => {
+    React.useEffect(() => {
         if (!chatId || !tutorStarts) return;
         startChat(chatId);
     }, [chatId, tutorStarts]);
 
     // 3. load game state for tabu/20Q, waits for chatId
-    useEffect(() => {
+    React.useEffect(() => {
         if (!lessonId || !lessonData || !chatId) return;
         fetch(GAME_STATE_ENDPOINT(lessonId, chatId))
             .then(res => res.ok ? res.json() : null)
             .then(data => setGameState(data));
     }, [lessonId, lessonData, chatId]);
+
+    // 4. log "left_page" when the tab closes/reloads (pagehide)
+    // or when the learner navigates elsewhere inside the app (unmount)
+    React.useEffect(() => {
+        const handlePageHide = () => sendLeftPage(chatIdRef.current);
+        window.addEventListener('pagehide', handlePageHide);
+        return () => {
+            window.removeEventListener('pagehide', handlePageHide);
+            sendLeftPage(chatIdRef.current);
+        };
+    }, []);
 
     const { data: promptsData } = useSWR(
         lessonId && chatId ? LESSON_PROMPTS_ENDPOINT(lessonId, chatId) : null,
@@ -191,13 +235,23 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         }]);
     }
 
+    // source is 'nudge' (yes in the popup) or 'manual' (the button), passed up from TabuPane
+    function handleTabuGuessed(source) {
+        if (tabu.guessed) return; // only the first confirmation counts
+        tabu.confirmGuess();
+        if (chatId) postLog(TABU_GUESSED_ENDPOINT(chatId), { source });
+    }
+
     async function handleRestart() {
         if (isRestarting) return;
         setIsRestarting(true);
+        // keep the old id before the state is reset below
+        const oldChatId = chatId;
         try {
-            // Clean up the old chat server-side
-            if (chatId) {
-                fetch(`/api/chat/${chatId}`, { method: 'DELETE' });
+            // log the restart first, then clean up the old chat server-side
+            if (oldChatId) {
+                await postLog(CHAT_END_ENDPOINT(oldChatId), { reason: 'restarted' });
+                fetch(`/api/chat/${oldChatId}`, { method: 'DELETE' });
             }
             // Reset local state
             setMessages([]);
@@ -205,8 +259,8 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             setChatId(null);
             resetTerminated();
 
-            // reuse the same helper as the first chat
-            const newChatId = await createChat();
+            // same helper as the first chat, plus a link back to the old one
+            const newChatId = await createChat(oldChatId);
             setChatId(newChatId);
         } finally {
             setIsRestarting(false);
@@ -216,6 +270,8 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
     async function handleEndLesson() {
         setIsComplete(true);
         setDetailedStatus('loading');
+        // log the end before anything else touches the chat
+        await postLog(CHAT_END_ENDPOINT(chatId), { reason: 'user_ended' });
         try {
             const response = await fetchDetailedFeedback(messages);
             if (response?.feedback_status === 'success') {
@@ -252,7 +308,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 messages={messages}
                 feedbacks={feedbacks}
                 isLoading={isLoading}
-                chatReady={!!chatId} 
+                chatReady={!!chatId}
                 promptsData={promptsData}
                 showDetails={showDetails}
                 onShowDetails={() => setShowDetails(true)}
@@ -278,7 +334,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                     violations={tabu.violations}
                     guessed={tabu.guessed}
                     guessNudge={tabu.guessNudge}
-                    onConfirmGuess={tabu.confirmGuess}
+                    onConfirmGuess={handleTabuGuessed}
                     onDismissNudge={tabu.dismissNudge}
                     hasAssistantResponded={hasAssistantResponded}
                 />

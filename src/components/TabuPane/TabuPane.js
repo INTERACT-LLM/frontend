@@ -9,7 +9,7 @@ export default function TabuPane({
   violations,
   guessed,
   guessNudge,
-  onConfirmGuess,
+  onConfirmGuess, // called with 'nudge' or 'manual', so the parent can log which button was used
   onDismissNudge,
   hasAssistantResponded, // prop: whether the assistant has made at least one response yet, used to determine when to enable the manual confirm button
 }) {
@@ -57,22 +57,22 @@ export default function TabuPane({
         <div className={styles.nudge}>
           <span className={styles.nudgeText}>🎯 Did the tutor guess it?</span>
           <div className={styles.nudgeButtons}>
-            <button className={styles.confirmBtn} onClick={onConfirmGuess}>✅ Yes!</button>
+            <button className={styles.confirmBtn} onClick={() => onConfirmGuess('nudge')}>✅ Yes!</button>
             <button className={styles.dismissBtn} onClick={onDismissNudge}>❌ No</button>
           </div>
         </div>
       ) : (
         <span
-        className={styles.tooltipWrapper}
-        data-tooltip={!hasAssistantResponded ? 'Wait for the tutor to make at least one guess' : 'Press if the tutor guessed correctly'}
+          className={styles.tooltipWrapper}
+          data-tooltip={!hasAssistantResponded ? 'Wait for the tutor to make at least one guess' : 'Press if the tutor guessed correctly'}
         >
-        <button
+          <button
             className={styles.manualConfirm}
-            onClick={onConfirmGuess}
+            onClick={() => onConfirmGuess('manual')}
             disabled={!hasAssistantResponded}
-        >
+          >
             ✅ Tutor guessed it!
-        </button>
+          </button>
         </span>
       )}
     </div>
