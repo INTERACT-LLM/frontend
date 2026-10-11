@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import styles from './ChatPane.module.css';
 import ChatMessages from "@/components/ChatMessages/ChatMessages";
 import ChatInput from "@/components/ChatInput/ChatInput";
@@ -14,7 +13,7 @@ export default function ChatPane({
   messages,
   feedbacks,
   isLoading,
-  sessionReady,
+  chatReady, 
   promptsData,
   showDetails,
   onShowDetails,
@@ -81,7 +80,7 @@ export default function ChatPane({
           />
         )}
         {!isFreeChat && <ProgressBar userTurns={userTurns} minTurns={minTurns} />}
-        <ChatInput onSubmit={onSubmit} disabled={isLoading || !!streamingContent || !sessionReady || !!terminated} />
+        <ChatInput onSubmit={onSubmit} disabled={isLoading || !!streamingContent || !chatReady || !!terminated} />
       </div>
 
       {showDetails && !isFreeChat && lessonData && (

@@ -2,6 +2,7 @@
 "use client";
 import { createContext, useContext, useState, useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
+import { getBrowserId } from "@/lib/browserId";
 
 const STORAGE_KEY = "interactllm_user";
 
@@ -14,27 +15,54 @@ function loadUser() {
   }
 }
 
+// the one place that writes the profile, mirrors loadUser
+function saveUser(user) {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(user));
+  } catch {
+    // storage blocked (e.g. private mode): the app still works for this visit
+  }
+}
+
+// Adds this browser's id to a user object.
+// The id is stored under its own key, so it survives clearUser (logout).
+function withBrowserId(user) {
+  return { ...user, browser_id: getBrowserId() };
+}
+
+// create the "channel" that components read the user from. Runs once, at file load.
 const UserContext = createContext(null);
 
 export function UserProvider({ children }) {
+  // Holds the current user. When setUser is called, every component reading it re-renders.
   const [user, setUser] = useState(null);
+
+  // Whether the profile modal is open.
   const [showModal, setShowModal] = useState(false);
+
+  // Lets you navigate in code, e.g. send the user to /login.
   const router = useRouter();
+
+  // The current URL path, e.g. "/lessons/game_tabu".
   const pathname = usePathname();
 
+  // Runs after render, and again whenever pathname or router changes.
+  // Loads the saved user (plus browser id), or redirects to /login if there is none.
   useEffect(() => {
     const stored = loadUser();
-    if (stored) setUser(stored);
+    if (stored) setUser(withBrowserId(stored));
     else if (pathname !== "/login") router.replace("/login");
   }, [pathname, router]);
 
   function handleSave(updated) {
-    setUser(updated);
+    const user = withBrowserId(updated); // an edit can never drop or change the id
+    saveUser(user); // persist the edit so it survives reloads
+    setUser(user);
     setShowModal(false);
   }
 
   function clearUser() {
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(STORAGE_KEY); // removes the profile only, browser_id stays
     document.cookie = "interactllm_user=; path=/; max-age=0";
     setUser(null);
     router.push("/login");
@@ -57,7 +85,9 @@ export function UserProvider({ children }) {
   );
 }
 
+
 export function useUser() {
+  // Reads whatever UserProvider put into UserContext.
   const ctx = useContext(UserContext);
   if (!ctx) throw new Error("useUser must be used inside <UserProvider>");
   return ctx;

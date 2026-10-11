@@ -1,14 +1,25 @@
 'use client';
 
-import React from 'react';
 import styles from './GeneralFeedback.module.css';
 
-export default function GeneralFeedback({ feedback }) {
-  if (!feedback) {
+// status: 'loading' | 'success' | 'error' (set by ChatWindow, passed on by CompletionWindow)
+export default function GeneralFeedback({ feedback, status = 'loading' }) {
+  if (status === 'loading') {
     return (
       <div className={styles.loadingRow}>
         <span className={styles.spinner} />
         <span className={styles.loadingText}>Generating feedback…</span>
+      </div>
+    );
+  }
+
+  // error, or "success" without data (shouldn't happen, but never spin forever)
+  if (status === 'error' || !feedback) {
+    return (
+      <div className={styles.loadingRow}>
+        <span className={styles.loadingText}>
+          Feedback could not be generated this time.
+        </span>
       </div>
     );
   }

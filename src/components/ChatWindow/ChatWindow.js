@@ -14,8 +14,9 @@ import TwentyQPane from '@/components/TwentyQPane/TwentyQPane';
 import CompletionWindow from '@/components/CompletionWindow/CompletionWindow';
 import styles from './ChatWindow.module.css';
 
-const SESSION_ENDPOINT = '/api/session';
 const CHAT_ENDPOINT = '/api/chat';
+const CHAT_END_ENDPOINT = (chatId) => `/api/chat/${chatId}/end`;
+const TABU_GUESSED_ENDPOINT = (chatId) => `/api/chat/${chatId}/tabu/guessed`;
 const LLM_STATUS_ENDPOINT = '/api/llm/status';
 const LESSON_ENDPOINT = (id) => `/api/lessons/${id}`;
 const LESSON_PROMPTS_ENDPOINT = (id, chatId) => `/api/lessons/${id}/prompts?chat_id=${chatId}`;
@@ -24,7 +25,43 @@ const IMMEDIATE_FEEDBACK_ENDPOINT = '/api/feedback/immediate';
 const DETAILED_FEEDBACK_ENDPOINT = '/api/feedback/detailed';
 const GAME_STATE_ENDPOINT = (id, chatId) => `/api/lessons/${id}/game-state?chat_id=${chatId}`;
 
+// what fetchFeedback returns when the request itself fails (same shape as the backend's error)
+const FEEDBACK_REQUEST_FAILED = { FeedbackResponse: null, feedback_status: 'error' };
+
 const fetcher = (url) => fetch(url).then((res) => res.json());
+
+//  one id per learner message, shared by the chat call and the feedback call.
+// crypto.randomUUID only exists on https:// or localhost, so fall back otherwise.
+function makeMessageId() {
+    if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return `msg-${crypto.randomUUID()}`;
+    }
+    return `msg-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+}
+
+// for logging events (end, tabu guess). Never throws:
+// a failed log is written to the console but never breaks the lesson.
+async function postLog(url, body) {
+    try {
+        const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+        });
+        if (!res.ok) console.error(`log failed: ${url} (${res.status})`);
+    } catch (err) {
+        console.error(`log failed: ${url}`, err);
+    }
+}
+
+// for when the page is going away. sendBeacon survives unloading, fetch usually does not.
+// The Blob gives it a JSON content type, so the backend parses it like a normal request.
+// If the chat already has a reason (e.g. user_ended), the backend ignores this one.
+function sendLeftPage(chatId) {
+    if (!chatId || typeof navigator === 'undefined' || !navigator.sendBeacon) return;
+    const body = new Blob([JSON.stringify({ reason: 'left_page' })], { type: 'application/json' });
+    navigator.sendBeacon(CHAT_END_ENDPOINT(chatId), body);
+}
 
 export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, ready = true }) {
     const { user } = useUser();
@@ -39,67 +76,82 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         terminated, resetTerminated, startChat, sendMessage,
     } = useStreamingChat({ onTerminated: handleTerminated });
 
-    const [sessionId] = React.useState(() => `session-${Date.now()}`);
     const [chatId, setChatId] = React.useState(null);
     const [feedbacks, setFeedbacks] = React.useState([]);
     const [isComplete, setIsComplete] = React.useState(false);
     const [detailedFeedback, setDetailedFeedback] = React.useState(null);
+    // 'loading' | 'success' | 'error', so "still waiting" and "failed" are never confused
+    const [detailedStatus, setDetailedStatus] = React.useState('loading');
     const [showDetails, setShowDetails] = React.useState(false);
     const [gameState, setGameState] = React.useState(null);
     const [isRestarting, setIsRestarting] = React.useState(false);
+
+    const chatRequestedRef = React.useRef(false);
+
+    // latest chatId for the pagehide listener, which is set up only once
+    // and would otherwise only ever see the first value (null)
+    const chatIdRef = React.useRef(null);
+    chatIdRef.current = chatId;
 
     const searchParams = useSearchParams();
     const tutorStarts = tutorStartsProp ?? searchParams.get("tutor_starts") === "true";
 
     const { data: lessonData } = useSWR(lessonId ? LESSON_ENDPOINT(lessonId) : null, fetcher);
 
-    // 1. create user session, gated on ready
-    const { data: sessionData } = useSWR(
-        user && ready ? [SESSION_ENDPOINT, sessionId] : null,
-        ([url]) => fetch(url, {
+    // one request creates the chat and carries the user profile with it.
+    // previousChatId is only set when this chat replaces one (restart).
+    async function createChat(previousChatId = null) {
+        const res = await fetch(CHAT_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-                session_id: sessionId,
+                lesson_id: lessonId ?? null,
+                tutor_starts: tutorStarts,
+                restarted_from: previousChatId,
                 user_profile: {
                     name: user.name,
+                    browser_id: user.browser_id, // tells apart learners with the same name
                     language: user.language,
                     proficiency_level: user.proficiency_level,
                     preferences: user.preferences,
                 },
             }),
-        }).then((res) => res.json())
-    );
+        });
+        const data = await res.json();
+        return data.chat_id;
+    }
 
-    // 2. create chat once session exists, snapshot config
+    // 1. create the chat directly once the user exists and we are ready
     React.useEffect(() => {
-        if (!sessionData || !ready) return;
-        fetch(CHAT_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                session_id: sessionId,
-                lesson_id: lessonId ?? null,
-                tutor_starts: tutorStarts,
-            }),
-        })
-            .then((res) => res.json())
-            .then((data) => setChatId(data.chat_id));
-    }, [sessionData, ready]);
+        if (!user || !ready || chatRequestedRef.current) return;
+        chatRequestedRef.current = true;
+        createChat().then(setChatId);
+    }, [user, ready]);
 
-    // 3. if tutor starts, fire the opener once chat is ready
+    // 2. if tutor starts, fire the opener once chat is ready
     React.useEffect(() => {
         if (!chatId || !tutorStarts) return;
         startChat(chatId);
     }, [chatId, tutorStarts]);
 
-    // 4. load game state for tabu/20Q, waits for chatId
+    // 3. load game state for tabu/20Q, waits for chatId
     React.useEffect(() => {
         if (!lessonId || !lessonData || !chatId) return;
         fetch(GAME_STATE_ENDPOINT(lessonId, chatId))
             .then(res => res.ok ? res.json() : null)
             .then(data => setGameState(data));
     }, [lessonId, lessonData, chatId]);
+
+    // 4. log "left_page" when the tab closes/reloads (pagehide)
+    // or when the learner navigates elsewhere inside the app (unmount)
+    React.useEffect(() => {
+        const handlePageHide = () => sendLeftPage(chatIdRef.current);
+        window.addEventListener('pagehide', handlePageHide);
+        return () => {
+            window.removeEventListener('pagehide', handlePageHide);
+            sendLeftPage(chatIdRef.current);
+        };
+    }, []);
 
     const { data: promptsData } = useSWR(
         lessonId && chatId ? LESSON_PROMPTS_ENDPOINT(lessonId, chatId) : null,
@@ -123,21 +175,31 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         ? (tabu.guessed || twentyQ.result !== null || (minTurns !== null && userTurns >= minTurns && !isLoading))
         : true);
 
+    // Never throws: a failed request becomes a normal error result,
+    // so Promise.all in submitNewMessage always finishes.
     async function fetchFeedback(userMessage) {
-        return fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                last_user_message: userMessage,
-                lesson_id: lessonId ?? null,
-                chat_id: chatId,
-            }),
-        }).then((res) => res.json());
+        try {
+            const res = await fetch(IMMEDIATE_FEEDBACK_ENDPOINT, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    last_user_message: userMessage,
+                    lesson_id: lessonId ?? null,
+                    chat_id: chatId,
+                    message_id: userMessage.id, // give each msg an id, so we can link between feedback and chat messages
+                }),
+            });
+            if (!res.ok) return FEEDBACK_REQUEST_FAILED;
+            return await res.json();
+        } catch (err) {
+            console.error('immediate feedback error:', err);
+            return FEEDBACK_REQUEST_FAILED;
+        }
     }
 
     async function fetchDetailedFeedback(msgs) {
         const cleanMessages = msgs.map(({ role, content }) => ({ role, content }));
-        return fetch(DETAILED_FEEDBACK_ENDPOINT, {
+        const res = await fetch(DETAILED_FEEDBACK_ENDPOINT, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
@@ -145,14 +207,18 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 lesson_id: lessonId ?? null,
                 chat_id: chatId,
             }),
-        }).then((res) => res.json());
+        });
+        // a 500 has no JSON body, so stop here with a clear error
+        if (!res.ok) throw new Error(`detailed feedback failed: ${res.status}`);
+        return res.json();
     }
 
     async function submitNewMessage(newMessage) {
         if (!newMessage.trim() || isLoading || !!streamingContent || !chatId || terminated) return;
         tabu.checkUserMessage(newMessage);
 
-        const userMessage = { role: 'user', content: newMessage };
+        // the id is created once here and travels with both calls below.
+        const userMessage = { id: makeMessageId(), role: 'user', content: newMessage };
         setMessages((prev) => [...prev, userMessage]);
 
         const [assistantContent, feedbackResponse] = await Promise.all([
@@ -163,18 +229,29 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
         if (assistantContent) tabu.checkLLMResponse(assistantContent);
 
         setFeedbacks((prev) => [...prev, {
+            messageId: userMessage.id,
             feedback: feedbackResponse?.FeedbackResponse,
-            feedbackStatus: feedbackResponse?.feedback_status,
+            feedbackStatus: feedbackResponse?.feedback_status ?? 'error',
         }]);
+    }
+
+    // source is 'nudge' (yes in the popup) or 'manual' (the button), passed up from TabuPane
+    function handleTabuGuessed(source) {
+        if (tabu.guessed) return; // only the first confirmation counts
+        tabu.confirmGuess();
+        if (chatId) postLog(TABU_GUESSED_ENDPOINT(chatId), { source });
     }
 
     async function handleRestart() {
         if (isRestarting) return;
         setIsRestarting(true);
+        // keep the old id before the state is reset below
+        const oldChatId = chatId;
         try {
-            // Clean up the old chat server-side
-            if (chatId) {
-                fetch(`/api/chat/${chatId}`, { method: 'DELETE' });
+            // log the restart first, then clean up the old chat server-side
+            if (oldChatId) {
+                await postLog(CHAT_END_ENDPOINT(oldChatId), { reason: 'restarted' });
+                fetch(`/api/chat/${oldChatId}`, { method: 'DELETE' });
             }
             // Reset local state
             setMessages([]);
@@ -182,18 +259,9 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
             setChatId(null);
             resetTerminated();
 
-            // Create a new chat — will bind to whichever provider is active now
-            const res = await fetch(CHAT_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    session_id: sessionId,
-                    lesson_id: lessonId ?? null,
-                    tutor_starts: tutorStarts,
-                }),
-            });
-            const data = await res.json();
-            setChatId(data.chat_id);
+            // same helper as the first chat, plus a link back to the old one
+            const newChatId = await createChat(oldChatId);
+            setChatId(newChatId);
         } finally {
             setIsRestarting(false);
         }
@@ -201,14 +269,23 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
 
     async function handleEndLesson() {
         setIsComplete(true);
+        setDetailedStatus('loading');
+        // log the end before anything else touches the chat
+        await postLog(CHAT_END_ENDPOINT(chatId), { reason: 'user_ended' });
         try {
             const response = await fetchDetailedFeedback(messages);
-            setDetailedFeedback(response?.GeneralFeedbackResponse || '');
+            if (response?.feedback_status === 'success') {
+                setDetailedFeedback(response.GeneralFeedbackResponse);
+                setDetailedStatus('success');
+            } else {
+                console.error('detailed feedback error:', response?.error);
+                setDetailedStatus('error');
+            }
         } catch (err) {
             console.error('detailed feedback error:', err);
+            setDetailedStatus('error');
         } finally {
             fetch(`/api/chat/${chatId}`, { method: 'DELETE' });
-            fetch(`/api/session/${sessionId}`, { method: 'DELETE' });
         }
     }
 
@@ -218,6 +295,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 lessonTitle={lessonData?.lesson_presentation.ui_title}
                 userTurns={userTurns}
                 detailedFeedback={detailedFeedback}
+                detailedStatus={detailedStatus}
             />
         );
     }
@@ -230,7 +308,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                 messages={messages}
                 feedbacks={feedbacks}
                 isLoading={isLoading}
-                sessionReady={!!chatId}
+                chatReady={!!chatId}
                 promptsData={promptsData}
                 showDetails={showDetails}
                 onShowDetails={() => setShowDetails(true)}
@@ -256,7 +334,7 @@ export default function ChatWindow({ lessonId, tutorStarts: tutorStartsProp, rea
                     violations={tabu.violations}
                     guessed={tabu.guessed}
                     guessNudge={tabu.guessNudge}
-                    onConfirmGuess={tabu.confirmGuess}
+                    onConfirmGuess={handleTabuGuessed}
                     onDismissNudge={tabu.dismissNudge}
                     hasAssistantResponded={hasAssistantResponded}
                 />
