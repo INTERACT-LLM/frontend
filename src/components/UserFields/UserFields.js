@@ -1,6 +1,13 @@
 import React from "react";
+import { ENABLE_CUSTOM_INSTRUCTIONS, IDENTITY_MODE } from "@/config/experiment";
 
 const LEVELS = ["beginner", "intermediate", "advanced"];
+
+// label and placeholder for each identity mode
+const IDENTITY_TEXT = {
+  participant: { label: "Participant ID", placeholder: "e.g. PXXX" },
+  name: { label: "Your name", placeholder: "e.g. Mina" },
+};
 
 /**
  * UserFields – the shared core of the profile form.
@@ -15,11 +22,14 @@ const LEVELS = ["beginner", "intermediate", "advanced"];
  *   styles      – CSS-module object from the parent
  */
 export default function UserFields({ form, set, onSubmit, nameRef, children, styles }) {
+  // fall back to "name" if the config value is misspelled
+  const identity = IDENTITY_TEXT[IDENTITY_MODE] ?? IDENTITY_TEXT.name;
+
   return (
     <>
       <div className={styles.field}>
         <label className={styles.label}>
-          Your name <span className={styles.required}>*</span>
+          {identity.label} <span className={styles.required}>*</span>
         </label>
         <input
           ref={nameRef}
@@ -27,7 +37,7 @@ export default function UserFields({ form, set, onSubmit, nameRef, children, sty
           value={form.name}
           onChange={(e) => set("name", e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && onSubmit?.()}
-          placeholder="e.g. Mina"
+          placeholder={identity.placeholder}
           className={styles.input}
           autoFocus={!nameRef}
         />
@@ -56,18 +66,21 @@ export default function UserFields({ form, set, onSubmit, nameRef, children, sty
         </div>
       </div>
 
-      <div className={styles.field}>
-        <label className={styles.label}>
-          Custom instructions / Preferences <span className={styles.optional}>(optional)</span>
-        </label>
-        <textarea
-          value={form.preferences}
-          onChange={(e) => set("preferences", e.target.value)}
-          placeholder="e.g. I need Spanish for work, but I also want to learn about the culture for travel in Spain..."
-          className={styles.input}
-          rows={3}
-        />
-      </div>
+      {/* hidden while the experiment flag is off */}
+      {ENABLE_CUSTOM_INSTRUCTIONS && (
+        <div className={styles.field}>
+          <label className={styles.label}>
+            Custom instructions / Preferences <span className={styles.optional}>(optional)</span>
+          </label>
+          <textarea
+            value={form.preferences}
+            onChange={(e) => set("preferences", e.target.value)}
+            placeholder="e.g. I need Spanish for work, but I also want to learn about the culture for travel in Spain..."
+            className={styles.input}
+            rows={3}
+          />
+        </div>
+      )}
     </>
   );
 }
