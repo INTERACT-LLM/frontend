@@ -3,6 +3,7 @@ import React from "react";
 import { useRouter } from "next/navigation";
 import styles from "./LoginPage.module.css";
 import UserFields from "@/components/UserFields/UserFields";
+import { ENABLE_CUSTOM_INSTRUCTIONS } from "@/config/experiment";
 
 const ALL_LANGUAGES = [
   "Danish", "English", "Spanish", "French", "German",
@@ -37,7 +38,8 @@ export default function LoginPage() {
     const data = {
       name: form.name.trim(),
       proficiency_level: form.proficiency_level,
-      preferences: form.preferences,
+      // force empty when the experiment flag is off
+      preferences: ENABLE_CUSTOM_INSTRUCTIONS ? form.preferences : "",
       nativeLanguage: form.nativeLanguage,
       learningLanguage: form.learningLanguage,
       language: form.learningLanguage, // what the backend expects
@@ -71,7 +73,7 @@ export default function LoginPage() {
             </p>
           </div>
           <p className={styles.leftFooter}>
-            Prototype v1.0 <br /> Profiles are currently saved locally in your browser.
+            Prototype version! <br />
           </p>
         </div>
       </div>

@@ -1,8 +1,9 @@
 // create a single user context to manage states (this context "owns" the user state)
 "use client";
-import { createContext, useContext, useState, useEffect } from "react";
+import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { getBrowserId } from "@/lib/browserId";
+import { ENABLE_CUSTOM_INSTRUCTIONS } from "@/config/experiment";
 
 const STORAGE_KEY = "interactllm_user";
 
@@ -24,21 +25,26 @@ function saveUser(user) {
   }
 }
 
-// Adds this browser's id to a user object.
-// The id is stored under its own key, so it survives clearUser (logout).
-function withBrowserId(user) {
-  return { ...user, browser_id: getBrowserId() };
+// Prepares a user object before the app sees it:
+// 1. adds this browser's id (stored under its own key, so it survives logout)
+// 2. applies experiment flags (blanks preferences when custom instructions are off)
+function prepareUser(user) {
+  return {
+    ...user,
+    browser_id: getBrowserId(),
+    preferences: ENABLE_CUSTOM_INSTRUCTIONS ? user.preferences ?? "" : "",
+  };
 }
 
 // create the "channel" that components read the user from. Runs once, at file load.
-const UserContext = createContext(null);
+const UserContext = React.createContext(null);
 
 export function UserProvider({ children }) {
   // Holds the current user. When setUser is called, every component reading it re-renders.
-  const [user, setUser] = useState(null);
+  const [user, setUser] = React.useState(null);
 
   // Whether the profile modal is open.
-  const [showModal, setShowModal] = useState(false);
+  const [showModal, setShowModal] = React.useState(false);
 
   // Lets you navigate in code, e.g. send the user to /login.
   const router = useRouter();
@@ -47,15 +53,16 @@ export function UserProvider({ children }) {
   const pathname = usePathname();
 
   // Runs after render, and again whenever pathname or router changes.
-  // Loads the saved user (plus browser id), or redirects to /login if there is none.
-  useEffect(() => {
+  // Loads the saved user (prepared with browser id + experiment flags),
+  // or redirects to /login if there is none.
+  React.useEffect(() => {
     const stored = loadUser();
-    if (stored) setUser(withBrowserId(stored));
+    if (stored) setUser(prepareUser(stored));
     else if (pathname !== "/login") router.replace("/login");
   }, [pathname, router]);
 
   function handleSave(updated) {
-    const user = withBrowserId(updated); // an edit can never drop or change the id
+    const user = prepareUser(updated); // an edit can never drop the id or bypass the flags
     saveUser(user); // persist the edit so it survives reloads
     setUser(user);
     setShowModal(false);
@@ -88,7 +95,7 @@ export function UserProvider({ children }) {
 
 export function useUser() {
   // Reads whatever UserProvider put into UserContext.
-  const ctx = useContext(UserContext);
+  const ctx = React.useContext(UserContext);
   if (!ctx) throw new Error("useUser must be used inside <UserProvider>");
   return ctx;
 }
