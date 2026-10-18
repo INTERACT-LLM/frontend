@@ -71,7 +71,7 @@ export default function LoginPage() {
             </p>
           </div>
           <p className={styles.leftFooter}>
-            Prototype v1.0 <br /> Profiles are currently saved locally in your browser.
+            Prototype version! <br /> 
           </p>
         </div>
       </div>
